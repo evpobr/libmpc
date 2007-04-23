@@ -1,0 +1,13 @@
+AC_INIT(configure.in)
+AC_CONFIG_AUX_DIR(config)
+
+AM_CONFIG_HEADER(include/config.h)
+AM_INIT_AUTOMAKE(libmpcs, 0.1)
+
+AC_LANG_C
+AC_PROG_CC
+AM_PROG_LIBTOOL
+
+AC_CHECK_HEADERS(replaygain/gain_analysis.h)
+
+AC_OUTPUT(Makefile libmpcenc/Makefile libmpcpsy/Makefile mpcenc/Makefile libwavformat/Makefile libmpcdec/Makefile mpcdec/Makefile mpcgain/Makefile mpc2sv8/Makefile include/Makefile wavcmp/Makefile)

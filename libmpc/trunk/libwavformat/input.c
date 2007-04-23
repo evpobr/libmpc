@@ -15,18 +15,18 @@ static void g_convert_float32_to_float32(t_wav_uint8 const * p_input,t_wav_float
 	t_wav_uint32 n;
 	for(n=0;n<p_sample_count;n++)
 	{
-		t_wav_uint32 temp;
-		
-		temp = (t_wav_uint32) (
-			( (t_wav_uint32)p_input[0] ) | 
-			( (t_wav_uint32)p_input[1] << 8) | 
-			( (t_wav_uint32)p_input[2] << 16) | 
-			( (t_wav_uint32)p_input[3] << 24) 
+		t_wav_conv temp;
+
+		temp.n = (t_wav_uint32) (
+			( (t_wav_uint32)p_input[0] ) |
+			( (t_wav_uint32)p_input[1] << 8) |
+			( (t_wav_uint32)p_input[2] << 16) |
+			( (t_wav_uint32)p_input[3] << 24)
 			);
 
 		p_input += 4;
 
-		p_sample_buffer[n] = *(t_wav_float32*)&temp;
+		p_sample_buffer[n] = temp.f;
 	}
 }
 
@@ -35,18 +35,18 @@ static void g_convert_float32_to_int16(t_wav_uint8 const * p_input,t_wav_int16 *
 	t_wav_uint32 n;
 	for(n=0;n<p_sample_count;n++)
 	{
-		t_wav_uint32 temp;
+		t_wav_conv temp;
 		t_wav_int32 tempi;
-		temp = (t_wav_uint32) (
-			( (t_wav_uint32)p_input[0] ) | 
-			( (t_wav_uint32)p_input[1] << 8) | 
-			( (t_wav_uint32)p_input[2] << 16) | 
-			( (t_wav_uint32)p_input[3] << 24) 
+		temp.n = (t_wav_uint32) (
+			( (t_wav_uint32)p_input[0] ) |
+			( (t_wav_uint32)p_input[1] << 8) |
+			( (t_wav_uint32)p_input[2] << 16) |
+			( (t_wav_uint32)p_input[3] << 24)
 			);
 
 		p_input += 4;
 
-		tempi = (t_wav_int32)(*(t_wav_float32*)&temp * 0x8000);
+		tempi = (t_wav_int32)(temp.f * 0x8000);
 		if (tempi < -0x8000) tempi = -0x8000;
 		else if (tempi > 0x7FFF) tempi = 0x7FFF;
 
@@ -60,10 +60,10 @@ static void g_convert_int32_to_float32(t_wav_uint8 const * p_input,t_wav_float32
 	for(n=0;n<p_sample_count;n++)
 	{
 		t_wav_int32 temp = (t_wav_int32) (
-			( (t_wav_uint32)p_input[0] ) | 
-			( (t_wav_uint32)p_input[1] << 8) | 
-			( (t_wav_uint32)p_input[2] << 16) | 
-			( (t_wav_uint32)p_input[3] << 24) 
+			( (t_wav_uint32)p_input[0] ) |
+			( (t_wav_uint32)p_input[1] << 8) |
+			( (t_wav_uint32)p_input[2] << 16) |
+			( (t_wav_uint32)p_input[3] << 24)
 			);
 
 		p_input += 4;
@@ -78,9 +78,9 @@ static void g_convert_int32_to_int16(t_wav_uint8 const * p_input,t_wav_int16 * p
 	for(n=0;n<p_sample_count;n++)
 	{
 		t_wav_int32 temp = (t_wav_int32) (
-			( (t_wav_uint32)p_input[0] ) | 
-			( (t_wav_uint32)p_input[1] << 8) | 
-			( (t_wav_uint32)p_input[2] << 16) | 
+			( (t_wav_uint32)p_input[0] ) |
+			( (t_wav_uint32)p_input[1] << 8) |
+			( (t_wav_uint32)p_input[2] << 16) |
 			( (t_wav_uint32)p_input[3] << 24)
 			);
 
@@ -96,8 +96,8 @@ static void g_convert_int24_to_float32(t_wav_uint8 const * p_input,t_wav_float32
 	for(n=0;n<p_sample_count;n++)
 	{
 		t_wav_int32 temp = (t_wav_int32) (
-			( (t_wav_uint32)p_input[0] ) | 
-			( (t_wav_uint32)p_input[1] << 8) | 
+			( (t_wav_uint32)p_input[0] ) |
+			( (t_wav_uint32)p_input[1] << 8) |
 			( (t_wav_int32)(t_wav_int8)p_input[2] << 16)
 			);
 
@@ -113,8 +113,8 @@ static void g_convert_int24_to_int16(t_wav_uint8 const * p_input,t_wav_int16 * p
 	for(n=0;n<p_sample_count;n++)
 	{
 		t_wav_int32 temp = (t_wav_int32) (
-			( (t_wav_uint32)p_input[0] ) | 
-			( (t_wav_uint32)p_input[1] << 8) | 
+			( (t_wav_uint32)p_input[0] ) |
+			( (t_wav_uint32)p_input[1] << 8) |
 			( (t_wav_int32)(t_wav_int8)p_input[2] << 16)
 			);
 
@@ -130,7 +130,7 @@ static void g_convert_int16_to_float32(t_wav_uint8 const * p_input,t_wav_float32
 	for(n=0;n<p_sample_count;n++)
 	{
 		t_wav_int16 temp = (t_wav_int16)
-			( 
+			(
 				(t_wav_uint16)p_input[0] |
 				( (t_wav_uint16)p_input[1] << 8 )
 			);
@@ -147,7 +147,7 @@ static void g_convert_int16_to_int16(t_wav_uint8 const * p_input,t_wav_int16 * p
 	for(n=0;n<p_sample_count;n++)
 	{
 		t_wav_int16 temp = (t_wav_int16)
-			( 
+			(
 				(t_wav_uint16)p_input[0] |
 				( (t_wav_uint16)p_input[1] << 8 )
 			);
@@ -200,7 +200,7 @@ static t_wav_uint32 waveformat_skip(t_wav_input_file * p_file,t_wav_uint32 p_byt
 	{
 		delta = p_bytes - done;
 		if (delta > sizeof(dummy)) delta = sizeof(dummy);
-		
+
 		delta_done = waveformat_read(p_file,dummy,delta);
 
 		done += delta_done;
@@ -221,7 +221,7 @@ static t_wav_uint32 waveformat_read_uint32(t_wav_input_file * p_file,t_wav_uint3
 {
 	t_wav_uint8 temp[4];
 	if (waveformat_read(p_file,&temp,sizeof(temp)) != sizeof(temp)) return 0;
-	* p_value = 
+	* p_value =
 		((t_wav_uint32)temp[0]) |
 		((t_wav_uint32)temp[1] << 8) |
 		((t_wav_uint32)temp[2] << 16) |
@@ -233,7 +233,7 @@ static t_wav_uint32 waveformat_read_uint16(t_wav_input_file * p_file,t_wav_uint1
 {
 	t_wav_uint8 temp[2];
 	if (waveformat_read(p_file,&temp,sizeof(temp)) != sizeof(temp)) return 0;
-	* p_value = 
+	* p_value =
 		((t_wav_uint16)temp[0]) |
 		((t_wav_uint16)temp[1] << 8);
 	return 1;
@@ -294,7 +294,7 @@ t_wav_uint32 waveformat_input_open(t_wav_input_file * p_file,t_wav_input_file_ca
 			if (waveformat_read_uint16(p_file,&p_file->m_bits_per_sample	) != 1) return 0;
 
 			p_file->m_bytes_per_sample = p_file->m_bits_per_sample / 8;
-			
+
 			if (p_file->m_bytes_per_sample == 0) return 0;
 
 			p_file->m_buffer_size = sizeof(p_file->m_workbuffer) / p_file->m_bytes_per_sample;
@@ -350,7 +350,7 @@ t_wav_uint32 waveformat_input_open(t_wav_input_file * p_file,t_wav_input_file_ca
 			{
 				if (waveformat_skip(p_file,fmt_remaining) != fmt_remaining) return 0;
 			}
-			
+
 			main_offset += chunk_size;
 			if (chunk_size & 1) main_offset++;
 
@@ -371,7 +371,7 @@ t_wav_uint32 waveformat_input_open(t_wav_input_file * p_file,t_wav_input_file_ca
 			if (toskip & 1) toskip++;
 
 			if (waveformat_skip(p_file,toskip) != toskip) return 0;
-			
+
 			main_offset += toskip;
 		}
 	}
@@ -391,16 +391,16 @@ t_wav_uint32 waveformat_input_process_float32(t_wav_input_file * p_file,t_wav_fl
 	while(samples_read < p_sample_count)
 	{
 		t_wav_uint32 delta, deltaread;
-		
+
 		delta = p_sample_count - samples_read;
 		if (delta > p_file->m_buffer_size) delta = p_file->m_buffer_size;
-		
+
 		deltaread = waveformat_read(p_file,p_file->m_workbuffer,delta * p_file->m_bytes_per_sample) / p_file->m_bytes_per_sample;
-		
+
 		if (deltaread > 0)
 		{
 			p_file->m_input_handler.m_convert_float32(p_file->m_workbuffer,p_sample_buffer + samples_read,deltaread);
-			
+
 			samples_read += deltaread;
 		}
 
@@ -424,16 +424,16 @@ t_wav_uint32 waveformat_input_process_int16(t_wav_input_file * p_file,t_wav_int1
 	while(samples_read < p_sample_count)
 	{
 		t_wav_uint32 delta, deltaread;
-		
+
 		delta = p_sample_count - samples_read;
 		if (delta > p_file->m_buffer_size) delta = p_file->m_buffer_size;
-		
+
 		deltaread = waveformat_read(p_file,p_file->m_workbuffer,delta * p_file->m_bytes_per_sample) / p_file->m_bytes_per_sample;
-		
+
 		if (deltaread > 0)
 		{
 			p_file->m_input_handler.m_convert_int16(p_file->m_workbuffer,p_sample_buffer + samples_read,deltaread);
-			
+
 			samples_read += deltaread;
 		}
 

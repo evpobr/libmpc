@@ -35,6 +35,12 @@ typedef float t_wav_float32;
 typedef double t_wav_float64;
 #endif
 
+typedef union
+{
+	t_wav_float32 f;
+	t_wav_uint32 n;
+} t_wav_conv;
+
 #define waveformat_tag_int 1
 #define waveformat_tag_float 3
 

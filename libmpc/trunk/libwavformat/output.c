@@ -17,11 +17,12 @@ __inline static void write_int32(t_wav_uint8 * p_output,t_wav_int32 p_value)
 
 __inline static void write_float(t_wav_uint8 * p_output,t_wav_float32 p_value)
 {
-	t_wav_uint32 bah = *(const t_wav_uint32*)&p_value;
-	p_output[0] = (t_wav_uint8)bah;
-	p_output[1] = (t_wav_uint8)(bah >> 8);
-	p_output[2] = (t_wav_uint8)(bah >> 16);
-	p_output[3] = (t_wav_uint8)(bah >> 24);
+	t_wav_conv bah;
+	bah.f = p_value;
+	p_output[0] = (t_wav_uint8)bah.n;
+	p_output[1] = (t_wav_uint8)(bah.n >> 8);
+	p_output[2] = (t_wav_uint8)(bah.n >> 16);
+	p_output[3] = (t_wav_uint8)(bah.n >> 24);
 }
 
 static void g_convert_float32_to_uint8(t_wav_float32 const * p_sample_buffer,t_wav_uint8 * p_output,t_wav_uint32 p_sample_count)

@@ -68,6 +68,13 @@ typedef struct mpc_lut_data_t {
 	mpc_huff_lut lut[1 << LUT_DEPTH];
 } mpc_lut_data;
 
+/// Type used for canonical huffman decoding
+typedef struct mpc_can_data_t {
+	const mpc_huffman * table;
+	const mpc_int8_t * sym;
+	mpc_huff_lut lut[1 << LUT_DEPTH];
+} mpc_can_data;
+
 void huff_init_lut(const int bits);
 
 #ifdef __cplusplus

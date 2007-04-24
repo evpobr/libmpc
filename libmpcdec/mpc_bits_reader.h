@@ -75,6 +75,29 @@ static mpc_inline mpc_int32_t mpc_bits_huff_dec(mpc_bits_reader * r, const mpc_h
 	return Table->Value;
 }
 
+static mpc_inline mpc_int32_t mpc_bits_can_dec(mpc_bits_reader * r, const mpc_can_data *can)
+{
+	mpc_uint16_t code;
+	mpc_huff_lut tmp;
+	const mpc_huffman * Table;
+	code = ((r->buff[0] << 16) | (r->buff[1] << 8) | r->buff[2]) >> r->count;
+
+	tmp = can->lut[code >> (16 - LUT_DEPTH)];
+	if (tmp.Length != 0) {
+		r->buff -= (int)(r->count - tmp.Length) >> 3;
+		r->count = (r->count - tmp.Length) & 0x07;
+		return tmp.Value;
+	}
+
+	Table = can->table + (unsigned char)tmp.Value;
+	while (code < Table->Code) Table++;
+
+	r->buff -= (int)(r->count - Table->Length) >> 3;
+	r->count = (r->count - Table->Length) & 0x07;
+
+	return can->sym[(Table->Value - (code >> (16 - Table->Length))) & 0xFF] ;
+}
+
 // LUT-based huffman decoding routine
 // works with maximum lengths up to 16
 static mpc_inline mpc_int32_t mpc_bits_huff_lut(mpc_bits_reader * r, const mpc_lut_data *lut)
@@ -92,7 +115,6 @@ static mpc_inline mpc_int32_t mpc_bits_huff_lut(mpc_bits_reader * r, const mpc_l
 	}
 
 	Table = lut->table + (unsigned char)tmp.Value;
-
 	while (code < Table->Code) Table++;
 
 	r->buff -= (int)(r->count - Table->Length) >> 3;

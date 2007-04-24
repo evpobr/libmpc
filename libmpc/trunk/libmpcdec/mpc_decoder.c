@@ -51,14 +51,13 @@ extern const mpc_huffman    mpc_table_HuffSCFI [ 4];
 extern const mpc_lut_data   mpc_HuffDSCF;
 
 //SV8 tables
-extern const mpc_huffman mpc_table_HuffBands[33];
-extern const mpc_lut_data mpc_HuffRes [2];
-extern const mpc_lut_data mpc_HuffQ_8 [8][2];
-extern const mpc_lut_data mpc_HuffQ9up_8;
-extern const mpc_lut_data mpc_HuffSCFI_1;
-extern const mpc_lut_data mpc_HuffSCFI_2;
-extern const mpc_lut_data mpc_HuffDSCF_1;
-extern const mpc_lut_data mpc_HuffDSCF_2;
+extern const mpc_can_data mpc_can_Bands;
+extern const mpc_can_data mpc_can_SCFI[2];
+extern const mpc_can_data mpc_can_DSCF[2];
+extern const mpc_can_data mpc_can_Res [2];
+extern const mpc_can_data mpc_can_Q [8][2];
+extern const mpc_can_data mpc_can_Q1;
+extern const mpc_can_data mpc_can_Q9up;
 
 //------------------------------------------------------------------------------
 // types
@@ -508,27 +507,27 @@ void mpc_decoder_read_bitstream_sv8(mpc_decoder * d, mpc_bits_reader * r, mpc_bo
 	static const mpc_int8_t idx52[125] = {-2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
 
 	mpc_int32_t n, Max_used_Band;
-	const mpc_lut_data * Table, * Tables[2];
+	const mpc_can_data * Table, * Tables[2];
 
 	/***************************** Header *****************************/
 
 	if (is_key_frame == MPC_TRUE) {
 		Max_used_Band = mpc_bits_log_dec(r, d->max_band + 1);
 	} else {
-		Max_used_Band = d->last_max_band + mpc_bits_huff_dec(r, mpc_table_HuffBands);
+		Max_used_Band = d->last_max_band + mpc_bits_can_dec(r, & mpc_can_Bands);
 		if (Max_used_Band > 32) Max_used_Band -= 33;
 	}
 	d->last_max_band = Max_used_Band;
 
 	if (Max_used_Band) {
-		d->Res_L[Max_used_Band-1] = mpc_bits_huff_lut(r, & mpc_HuffRes[0]);
-		d->Res_R[Max_used_Band-1] = mpc_bits_huff_lut(r, & mpc_HuffRes[0]);
+		d->Res_L[Max_used_Band-1] = mpc_bits_can_dec(r, & mpc_can_Res[0]);
+		d->Res_R[Max_used_Band-1] = mpc_bits_can_dec(r, & mpc_can_Res[0]);
 		if (d->Res_L[Max_used_Band-1] > 15) d->Res_L[Max_used_Band-1] -= 17;
 		if (d->Res_R[Max_used_Band-1] > 15) d->Res_R[Max_used_Band-1] -= 17;
 		for ( n = Max_used_Band - 2; n >= 0; n--) {
-			d->Res_L[n] = mpc_bits_huff_lut(r, & mpc_HuffRes[d->Res_L[n + 1] > 2]) + d->Res_L[n + 1];
+			d->Res_L[n] = mpc_bits_can_dec(r, & mpc_can_Res[d->Res_L[n + 1] > 2]) + d->Res_L[n + 1];
 			if (d->Res_L[n] > 15) d->Res_L[n] -= 17;
-			d->Res_R[n] = mpc_bits_huff_lut(r, & mpc_HuffRes[d->Res_R[n + 1] > 2]) + d->Res_R[n + 1];
+			d->Res_R[n] = mpc_bits_can_dec(r, & mpc_can_Res[d->Res_R[n + 1] > 2]) + d->Res_R[n + 1];
 			if (d->Res_R[n] > 15) d->Res_R[n] -= 17;
 		}
 
@@ -561,14 +560,14 @@ void mpc_decoder_read_bitstream_sv8(mpc_decoder * d, mpc_bits_reader * r, mpc_bo
 			d->DSCF_Flag_L[n] = d->DSCF_Flag_R[n] = 1; // new block -> force key frame
 	}
 
-	Tables[0] = & mpc_HuffSCFI_1;
-	Tables[1] = & mpc_HuffSCFI_2;
+	Tables[0] = & mpc_can_SCFI[0];
+	Tables[1] = & mpc_can_SCFI[1];
 	for ( n = 0; n < Max_used_Band; n++ ) {
 		int tmp = 0, cnt = -1;
 		if (d->Res_L[n]) cnt++;
 		if (d->Res_R[n]) cnt++;
 		if (cnt >= 0) {
-			tmp = mpc_bits_huff_lut(r, Tables[cnt]);
+			tmp = mpc_bits_can_dec(r, Tables[cnt]);
 			if (d->Res_L[n]) d->SCFI_L[n] = tmp >> (2 * cnt);
 			if (d->Res_R[n]) d->SCFI_R[n] = tmp & 3;
 		}
@@ -588,14 +587,14 @@ void mpc_decoder_read_bitstream_sv8(mpc_decoder * d, mpc_bits_reader * r, mpc_bo
 					SCF[0] = (mpc_int32_t)mpc_bits_read(r, 7) - 6;
 					*DSCF_Flag = 0;
 				} else {
-					mpc_uint_t tmp = mpc_bits_huff_lut(r, & mpc_HuffDSCF_2);
+					mpc_uint_t tmp = mpc_bits_can_dec(r, & mpc_can_DSCF[1]);
 					if (tmp == 64)
 						tmp += mpc_bits_read(r, 6);
 					SCF[0] = ((SCF[2] - 25 + tmp) & 127) - 6;
 				}
 				for( m = 0; m < 2; m++){
 					if (((SCFI << m) & 2) == 0) {
-						mpc_uint_t tmp = mpc_bits_huff_lut(r, & mpc_HuffDSCF_1);
+						mpc_uint_t tmp = mpc_bits_can_dec(r, & mpc_can_DSCF[0]);
 						if (tmp == 31)
 							tmp = 64 + mpc_bits_read(r, 6);
 						SCF[m + 1] = ((SCF[m] - 25 + tmp) & 127) - 6;
@@ -620,21 +619,21 @@ void mpc_decoder_read_bitstream_sv8(mpc_decoder * d, mpc_bits_reader * r, mpc_bo
 			mpc_int32_t k = 0, idx = 1;
 			if (Res != 0) {
 				if (Res == 2) {
-					Tables[0] = & mpc_HuffQ_8 [1][0];
-					Tables[1] = & mpc_HuffQ_8 [1][1];
+					Tables[0] = & mpc_can_Q [0][0];
+					Tables[1] = & mpc_can_Q [0][1];
 					idx = 2 * thres[Res];
 					for ( ; k < 36; k += 3) {
-						int tmp = mpc_bits_huff_lut(r, Tables[idx > thres[Res]]);
+						int tmp = mpc_bits_can_dec(r, Tables[idx > thres[Res]]);
 						q[k] = idx50[tmp];
 						q[k + 1] = idx51[tmp];
 						q[k + 2] = idx52[tmp];
 						idx = (idx >> 1) + HuffQ2_var[tmp];
 					}
 				} else if (Res == 1) {
-					Table = & mpc_HuffQ_8 [0][0];
+					Table = & mpc_can_Q1;
 					for( ; k < 36; ){
 						int kmax = k + 18;
-						mpc_uint_t cnt = mpc_bits_huff_lut(r, Table);
+						mpc_uint_t cnt = mpc_bits_can_dec(r, Table);
 						idx = 0;
 						if (cnt > 0 && cnt < 18)
 							idx = mpc_bits_enum_dec(r, cnt <= 9 ? cnt : 18 - cnt, 18);
@@ -652,27 +651,27 @@ void mpc_decoder_read_bitstream_sv8(mpc_decoder * d, mpc_bits_reader * r, mpc_bo
 						q[k] = ((tmp >> 24) & 0xFF) + ((tmp >> 16) & 0xFF) + ((tmp >>  8) & 0xFF) + ((tmp >>  0) & 0xFF) - 510;
 					}
 				} else if (Res <= 4) {
-					Table = & mpc_HuffQ_8[Res - 1][0];
+					Table = & mpc_can_Q[1][Res - 3];
 					for ( ; k < 36; k += 2 ) {
 						union {
 							mpc_int8_t sym;
 							struct { mpc_int8_t s1:4, s2:4; };
 						} tmp;
-						tmp.sym = mpc_bits_huff_lut(r, Table);
+						tmp.sym = mpc_bits_can_dec(r, Table);
 						q[k] = tmp.s1;
 						q[k + 1] = tmp.s2;
 					}
 				} else if (Res <= 8) {
-					Tables[0] = & mpc_HuffQ_8 [Res - 1][0];
-					Tables[1] = & mpc_HuffQ_8 [Res - 1][1];
+					Tables[0] = & mpc_can_Q [Res - 3][0];
+					Tables[1] = & mpc_can_Q [Res - 3][1];
 					idx = 2 * thres[Res];
 					for ( ; k < 36; k++ ) {
-						q[k] = mpc_bits_huff_lut(r, Tables[idx > thres[Res]]);
+						q[k] = mpc_bits_can_dec(r, Tables[idx > thres[Res]]);
 						idx = (idx >> 1) + absi(q[k]);
 					}
 				} else {
 					for ( ; k < 36; k++ ) {
-						q[k] = (unsigned char) mpc_bits_huff_lut(r, & mpc_HuffQ9up_8);
+						q[k] = (unsigned char) mpc_bits_can_dec(r, & mpc_can_Q9up);
 						if (Res != 9)
 							q[k] = (q[k] << (Res - 9)) | mpc_bits_read(r, Res - 9);
 						q[k] -= Dc[Res];

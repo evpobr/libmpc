@@ -134,7 +134,7 @@ main(int argc, char **argv)
 	writeStreamInfo( &e, si.max_band, si.ms > 0, si.samples, si.sample_freq,
 					  si.channels);
 	si_size = writeBlock(&e, "SH", MPC_TRUE, 0);
-	writeGainInfo(&e, si.gain_title, si.gain_album, si.peak_title, si.peak_album);
+	writeGainInfo(&e, si.gain_title, si.peak_title, si.gain_album, si.peak_album);
 	si_size = writeBlock(&e, "RG", MPC_FALSE, 0);
 	writeEncoderInfo(&e, si.profile, si.pns, si.encoder_version / 100,
 					  si.encoder_version % 100, 0);

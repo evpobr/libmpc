@@ -61,22 +61,25 @@ mpc_get_version_string(float profile) // profile is 0...15, where 7...13 is used
 static void
 mpc_get_encoder_string(mpc_streaminfo* si)
 {
-	if (si->stream_version < 8) {
-		if (si->encoder_version == 0) {
+	int ver = si->encoder_version;
+	if (si->stream_version >= 8)
+		ver = (si->encoder_version >> 24) * 100 + ((si->encoder_version >> 16) & 0xFF);
+	if (ver <= 116) {
+		if (ver == 0) {
 			sprintf(si->encoder, "Buschmann 1.7.0...9, Klemm 0.90...1.05");
 		} else {
-			switch (si->encoder_version % 10) {
+			switch (ver % 10) {
 				case 0:
-					sprintf(si->encoder, "Release %u.%u", si->encoder_version / 100,
-							si->encoder_version / 10 % 10);
+					sprintf(si->encoder, "Release %u.%u", ver / 100,
+							ver / 10 % 10);
 					break;
 				case 2: case 4: case 6: case 8:
-					sprintf(si->encoder, "Beta %u.%02u", si->encoder_version / 100,
-							si->encoder_version % 100);
+					sprintf(si->encoder, "Beta %u.%02u", ver / 100,
+							ver % 100);
 					break;
 				default:
 					sprintf(si->encoder, "--Alpha-- %u.%02u",
-							si->encoder_version / 100, si->encoder_version % 100);
+							ver / 100, ver % 100);
 					break;
 			}
 		}

@@ -111,9 +111,22 @@ main(int argc, char **argv)
         total_samples += frame.samples;
         sum           += end - begin;
 
-        if(is_wav_output)
+		if(is_wav_output) {
+#ifdef MPC_FIXED_POINT
+			mpc_int16_t tmp_buff[MPC_DECODER_BUFFER_LENGTH];
+			int i;
+			for( i = 0; i < MPC_DECODER_BUFFER_LENGTH; i++) {
+				int tmp = sample_buffer[i] >> MPC_FIXED_POINT_FRACTPART;
+				if (tmp > ((1 << 15) - 1)) tmp = ((1 << 15) - 1);
+				if (tmp < -(1 << 15)) tmp = -(1 << 15);
+				tmp_buff[i] = tmp;
+			}
+			if(waveformat_output_process_int16(&wav_output, tmp_buff, frame.samples*2) < 0)
+#else
             if(waveformat_output_process_float32(&wav_output, sample_buffer, frame.samples*2) < 0)
+#endif
                 break;
+		}
     }
 
 	if (err != MPC_STATUS_OK)

@@ -92,6 +92,10 @@ typedef enum mpc_status {
 } mpc_status;
 
 #ifdef MPC_FIXED_POINT
+# define MPC_FIXED_POINT_SHIFT 16
+# define MPC_FIXED_POINT_FRACTPART 14
+# define MPC_FIXED_POINT_SCALE_SHIFT (MPC_FIXED_POINT_SHIFT + MPC_FIXED_POINT_FRACTPART)
+# define MPC_FIXED_POINT_SCALE (1 << (MPC_FIXED_POINT_SCALE_SHIFT - 1))
 typedef mpc_int32_t MPC_SAMPLE_FORMAT;
 #else
 typedef float       MPC_SAMPLE_FORMAT;

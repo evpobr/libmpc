@@ -45,9 +45,6 @@
 extern "C" {
 #endif
 
-#define MPC_FIXED_POINT_SHIFT 16
-
-
 #ifdef MPC_FIXED_POINT
 
 #ifdef _WIN32_WCE
@@ -55,12 +52,7 @@ extern "C" {
 #define MPC_HAVE_MULHIGH
 #endif
 
-#define MPC_FIXED_POINT_SCALE_SHIFT (MPC_FIXED_POINT_SHIFT + MPC_FIXED_POINT_FRACTPART)
-#define MPC_FIXED_POINT_SCALE (1 << (MPC_FIXED_POINT_SCALE_SHIFT - 1))
-
 //in fixedpoint mode, results in decode output buffer are in -MPC_FIXED_POINT_SCALE ... MPC_FIXED_POINT_SCALE range
-
-#define MPC_FIXED_POINT_FRACTPART 14
 
 typedef mpc_int64_t MPC_SAMPLE_FORMAT_MULTIPLY;
 

@@ -168,11 +168,13 @@ void mpc_decoder_decode_frame(mpc_decoder * d,
 	d->decoded_samples += MPC_FRAME_LENGTH;
 
     // reconstruct exact filelength
-	if (d->decoded_samples == d->samples && d->stream_version == 7) {
+	if (d->decoded_samples - d->samples < MPC_FRAME_LENGTH && d->stream_version == 7) {
 		int last_frame_samples = mpc_bits_read(r, 11);
-		if (last_frame_samples == 0) last_frame_samples = MPC_FRAME_LENGTH;
-		d->samples += last_frame_samples - MPC_FRAME_LENGTH;
-		samples_left += last_frame_samples - MPC_FRAME_LENGTH;
+		if (d->decoded_samples == d->samples) {
+			if (last_frame_samples == 0) last_frame_samples = MPC_FRAME_LENGTH;
+			d->samples += last_frame_samples - MPC_FRAME_LENGTH;
+			samples_left += last_frame_samples - MPC_FRAME_LENGTH;
+		}
 	}
 
 	i->samples = samples_left > MPC_FRAME_LENGTH ? MPC_FRAME_LENGTH : samples_left < 0 ? 0 : (mpc_uint32_t) samples_left;

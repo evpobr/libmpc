@@ -408,7 +408,7 @@ mpc_status mpc_demux_decode(mpc_demux * d, mpc_frame_info * i)
 		}
 		mpc_demux_fill(d, MAX_FRAME_SIZE, MPC_BUFFER_FULL | MPC_BUFFER_SWAP);
 		d->block_bits = (mpc_int_t) mpc_bits_read(&d->bits_reader, 20); // read frame size
-		if (d->d->decoded_samples + MPC_FRAME_LENGTH == d->d->samples) d->block_bits += 11; // we will read last frame size
+		if (MPC_FRAME_LENGTH > d->d->samples - d->d->decoded_samples - 1) d->block_bits += 11; // we will read last frame size
 		r = d->bits_reader;
 		mpc_decoder_decode_frame(d->d, &d->bits_reader, i);
 		if (i->bits != -1 && d->block_bits != ((d->bits_reader.buff - r.buff) << 3) + r.count - d->bits_reader.count) {

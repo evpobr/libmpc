@@ -379,8 +379,7 @@ mpc_status mpc_demux_decode(mpc_demux * d, mpc_frame_info * i)
 			mpc_demux_fill(d, 11, 0); // max header block size
 			mpc_bits_get_block(&d->bits_reader, &b);
 			while( memcmp(b.key, "AP", 2) != 0 ) { // scan all blocks until audio
-				if (b.key[0] < 65 || b.key[0] > 90 || b.key[1] < 65 || b.key[1] > 90
-								|| b.size > (mpc_uint64_t) DEMUX_BUFFER_SIZE - 11)
+				if (b.key[0] < 65 || b.key[0] > 90 || b.key[1] < 65 || b.key[1] > 90)
 					goto error;
 				if (memcmp(b.key, "SE", 2) == 0) { // end block
 					i->bits = -1;
@@ -395,7 +394,7 @@ mpc_status mpc_demux_decode(mpc_demux * d, mpc_frame_info * i)
 			d->block_frames = 1 << d->si.block_pwr;
 			i->is_key_frame = MPC_TRUE;
 		}
-		if (d->buffer + d->bytes_total - d->bits_reader.buff <= MAX_FRAME_SIZE * 2)
+		if (d->buffer + d->bytes_total - d->bits_reader.buff <= MAX_FRAME_SIZE)
 			mpc_demux_fill(d, (d->block_bits >> 3) + 1, 0);
 		r = d->bits_reader;
 		mpc_decoder_decode_frame(d->d, &d->bits_reader, i);

@@ -197,25 +197,16 @@ Init_FFT ( PsyModel* m )
 void
 PowSpec256 ( const float* x, float* erg )
 {
-    const float*  win = Hann_256;
-    float*        aix = a;
-    int           i;
-
+    int i;
     // windowing
-    i = 256;
-    while (i--)
-        *aix++ = *x++ * *win++;
+    for( i = 0; i < 256; ++i )
+        a[i] = x[i] * Hann_256[i];
 
-    // perform FFT
-    rdft ( 256, a, ip, w );
+    rdft(256, a, ip, w); // perform FFT
 
     // calculate power
-    aix = a;    // reset pointer
-    i   = 128;
-    while (i--) {
-        *erg++ = aix[0]*aix[0] + aix[1]*aix[1];
-        aix += 2;
-    }
+    for( i = 0; i < 128; ++i)
+        erg[i] = a[i*2] * a[i*2] + a[i*2+1] * a[i*2+1];
 }
 
 // input : Signal *x
@@ -223,31 +214,16 @@ PowSpec256 ( const float* x, float* erg )
 void
 PowSpec1024 ( const float* x, float* erg )
 {
-    const float*  win = Hann_1024;
-    float*        aix = a;
-    int           i;
+    int i;
+    // windowing
+    for( i = 0; i < 1024; ++i )
+        a[i] = x[i] * Hann_1024[i];
 
-    i = 1024;                   // windowing
-    while (i--)
-        *aix++ = *x++ * *win++;
+    rdft(1024, a, ip, w); // perform FFT
 
-//    for (i=0; i<1024; i++)
-//        a[i] = Hann_1024[i] * ((i==0 ? 0 : i-512) + 1000);
-
-    rdft ( 1024, a, ip, w );    // perform FFT
-
-    aix = a;                    // calculate power
-    i   = 512;
-
-
-    DECONV;
-//    for (i = 0; i <= 512; i++ )
-//        printf ("%3u %12.6f %12.6f\n", i, a[i+i], a[i+i+1]);
-//    exit(1);
-    while (i--) {
-        *erg++ = aix[0]*aix[0] + aix[1]*aix[1];
-        aix += 2;
-    }
+    // calculate power
+    for( i = 0; i < 512; ++i)
+        erg[i] = a[i*2] * a[i*2] + a[i*2+1] * a[i*2+1];
 }
 
 // input : Signal *x
@@ -255,26 +231,18 @@ PowSpec1024 ( const float* x, float* erg )
 void
 PowSpec2048 ( const float* x, float* erg )
 {
-    const float*  win = Hann_1600;
-    float*        aix = a;
-    int           i;
-
+    int i;
     // windowing (only 1600 samples available -> centered in 2048!)
-    memset ( a     , 0, 224*sizeof(*a) );
-    aix = a + 224;
-    i   = 1600;
-    while (i--)
-        *aix++ = *x++ * *win++;
-    memset ( a+1824, 0, 224*sizeof(*a) );
+    memset(a, 0, 224 * sizeof *a);
+    for( i = 0; i < 1600; ++i )
+        a[i+224] = x[i] * Hann_1600[i];
+    memset(a + 1824, 0, 224 * sizeof *a);
 
-    rdft ( 2048, a, ip, w );    // perform FFT
+    rdft(2048, a, ip, w); // perform FFT
 
-    aix = a;                    // calculate power
-    i   = 1024;
-    while (i--) {
-        *erg++ = aix[0]*aix[0] + aix[1]*aix[1];
-        aix += 2;
-    }
+    // calculate power
+    for( i = 0; i < 1024; ++i)
+        erg[i] = a[i*2] * a[i*2] + a[i*2+1] * a[i*2+1];
 }
 
 // input : Signal *x
@@ -282,23 +250,17 @@ PowSpec2048 ( const float* x, float* erg )
 void
 PolarSpec1024 ( const float* x, float* erg, float* phs )
 {
-    const float*  win = Hann_1024;
-    float*        aix = a;
-    int           i;
+    int i;
+    for( i = 0; i < 1024; i++ )
+        a[i] = x[i] * Hann_1024[i];
 
-    i = 1024;                   // windowing
-    while (i--)
-        *aix++ = *x++ * *win++;
-
-    rdft ( 1024, a, ip, w );    // perform FFT
+    rdft( 1024, a, ip, w); // perform FFT
 
     // calculate power and phase
-    aix = a;    // reset pointer
-    i   = 512;
-    while (i--) {
-        *erg++ = aix[0]*aix[0] + aix[1]*aix[1];
-        *phs++ = ATAN2F (aix[1], aix[0]);
-        aix += 2;
+    for( i = 0; i < 512; ++i )
+    {
+        erg[i]  = a[i*2] * a[i*2] + a[i*2+1] * a[i*2+1];
+        phs[i]  = ATAN2F( a[i*2+1], a[i*2] );  
     }
 }
 
@@ -307,25 +269,14 @@ PolarSpec1024 ( const float* x, float* erg, float* phs )
 void
 Cepstrum2048 ( float* cep, const int MaxLine )
 {
-    float*  aix = cep;
-    float*  bix = cep + 2048;
-    int     i;
-
+    int i, j;
     // generate real, even spectrum (symmetric around 1024, cep[2048-i] = cep[i])
-    for ( i = 0; i < 1024; i++ )
-        *bix-- = *aix++;
-
-    // perform IFFT
-    rdft ( 2048, cep, ip, w );
-
+    for( i = 0, j = 1024; i < 1024; ++i, --j )
+        cep[1024 + j] = cep[i];
+ 
+    rdft(2048, cep, ip, w);
+ 
     // only real part as outcome (all even indexes of cep[])
-    aix = cep;
-    bix = cep;
-    i   = MaxLine + 1;
-    while (i--) {
-        *aix = *bix * (float) (0.9888 / 2048.);
-//      *aix = *bix * 0.0004828125f;
-        aix ++;
-        bix += 2;
-    }
+    for( i = 0; i < MaxLine + 1; ++i )
+        cep[i] = cep[i*2] * (float) (0.9888 / 2048);
 }

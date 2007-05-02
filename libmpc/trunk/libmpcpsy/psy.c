@@ -786,23 +786,25 @@ ApplyLtq ( float*        thr0,
            const float   AdaptedLTQ,
            int           MSflag )
 {
-    int    n;
-    int    k;
-    float  ltq;
-    float  tmp;
-        float  ms = MSflag  ?  0.125f * AdaptedLTQ  :  0.25f * AdaptedLTQ ;
+    int     n, k;
+    float   ms, ltq, tmp, tmpThr0, tmpThr1;
 
-    for ( n = 0; n < PART_LONG; n++ ) {
-        for ( k = wl[n]; k <= wh[n]; k++, thr0++, thr1++ ) {    // threshold in quiet (Partition)
+    ms = AdaptedLTQ * (MSflag ? 0.125f : 0.25f);
+    for( n = 0; n < PART_LONG; n++ )
+    {
+        tmpThr0 = sqrt(partThr0[n]);
+        tmpThr1 = sqrt(partThr1[n]);
+        for ( k = wl[n]; k <= wh[n]; k++, thr0++, thr1++ )
+        {
+            // threshold in quiet (Partition)
             // Applies a much more gentle ATH rolloff + 6 dB more dynamic
             ltq   = sqrt (ms * fftLtq [k]);
-            tmp   = sqrt (partThr0 [n]) + ltq;
+            tmp   = tmpThr0 + ltq;
             *thr0 = tmp * tmp;
-            tmp   = sqrt (partThr1 [n]) + ltq;
+            tmp   = tmpThr1 + ltq;
             *thr1 = tmp * tmp;
         }
     }
-    return;
 }
 
 // input : Subband energies *erg0, *erg1

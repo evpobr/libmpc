@@ -100,7 +100,7 @@ mpc_demux_fill(mpc_demux * d, mpc_uint32_t min_bytes, int flags)
 		return bytes2read;
 	}
 
-	return 0;
+	return (mpc_uint32_t) -1;
 }
 
 /**
@@ -366,6 +366,7 @@ void mpc_demux_get_info(mpc_demux * d, mpc_streaminfo * i)
 mpc_status mpc_demux_decode(mpc_demux * d, mpc_frame_info * i)
 {
 	mpc_bits_reader r;
+	int pos = 0;
 	if (d->si.stream_version >= 8) {
 		i->is_key_frame = MPC_FALSE;
 
@@ -378,12 +379,17 @@ mpc_status mpc_demux_decode(mpc_demux * d, mpc_frame_info * i)
 			}
 			mpc_demux_fill(d, 11, 0); // max header block size
 			mpc_bits_get_block(&d->bits_reader, &b);
+			pos = mpc_demux_pos(d) >> 3;
 			while( memcmp(b.key, "AP", 2) != 0 ) { // scan all blocks until audio
+				if (b.key[0] < 65 || b.key[0] > 90 || b.key[1] < 65 || b.key[1] > 90
+								|| b.size > (mpc_uint64_t) DEMUX_BUFFER_SIZE - 11)
+					goto error;
 				if (memcmp(b.key, "SE", 2) == 0) { // end block
 					i->bits = -1;
 					return MPC_STATUS_OK;
 				}
-				mpc_demux_fill(d, 11 + (mpc_uint32_t) b.size, 0);
+				if (mpc_demux_fill(d, 11 + (mpc_uint32_t) b.size, 0) == 0)
+					goto error;
 				d->bits_reader.buff += b.size;
 				mpc_bits_get_block(&d->bits_reader, &b);
 			}
@@ -391,16 +397,14 @@ mpc_status mpc_demux_decode(mpc_demux * d, mpc_frame_info * i)
 			d->block_frames = 1 << d->si.block_pwr;
 			i->is_key_frame = MPC_TRUE;
 		}
-		if (d->buffer + d->bytes_total - d->bits_reader.buff <= MAX_FRAME_SIZE)
+		if (d->buffer + d->bytes_total - d->bits_reader.buff <= MAX_FRAME_SIZE * 2)
 			mpc_demux_fill(d, (d->block_bits >> 3) + 1, 0);
 		r = d->bits_reader;
 		mpc_decoder_decode_frame(d->d, &d->bits_reader, i);
 		d->block_bits -= ((d->bits_reader.buff - r.buff) << 3) + r.count - d->bits_reader.count;
 		d->block_frames--;
-		if (d->block_bits < 0 || (d->block_frames == 0 && d->block_bits > 7)) {
-			i->bits = -1; // we pretend it's end of file
-			return MPC_STATUS_INVALIDSV;
-		}
+		if (d->block_bits < 0 || (d->block_frames == 0 && d->block_bits > 7))
+			goto error;
 	} else {
 		if (d->d->decoded_samples == (d->seek_table_size << d->seek_pwr) * MPC_FRAME_LENGTH) {
 			d->seek_table[d->seek_table_size] = (mpc_uint32_t) mpc_demux_pos(d);
@@ -411,16 +415,17 @@ mpc_status mpc_demux_decode(mpc_demux * d, mpc_frame_info * i)
 		if (MPC_FRAME_LENGTH > d->d->samples - d->d->decoded_samples - 1) d->block_bits += 11; // we will read last frame size
 		r = d->bits_reader;
 		mpc_decoder_decode_frame(d->d, &d->bits_reader, i);
-		if (i->bits != -1 && d->block_bits != ((d->bits_reader.buff - r.buff) << 3) + r.count - d->bits_reader.count) {
-			i->bits = -1; // we pretend it's end of file
-			return MPC_STATUS_INVALIDSV;
-		}
+		if (i->bits != -1 && d->block_bits != ((d->bits_reader.buff - r.buff) << 3) + r.count - d->bits_reader.count)
+			goto error;
 	}
-	if (d->buffer + d->bytes_total < d->bits_reader.buff + ((8 - d->bits_reader.count) >> 3)) {
-		i->bits = -1; // we pretend it's end of file
-		return MPC_STATUS_INVALIDSV;
-	}
+	if (d->buffer + d->bytes_total < d->bits_reader.buff + ((8 - d->bits_reader.count) >> 3))
+		goto error;
+
 	return MPC_STATUS_OK;
+error:
+		i->bits = -1; // we pretend it's end of file
+		// return MPC_STATUS_INVALIDSV;
+		return pos;
 }
 
 mpc_status mpc_demux_seek_second(mpc_demux * d, double seconds)

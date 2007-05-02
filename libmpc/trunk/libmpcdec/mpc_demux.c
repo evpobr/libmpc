@@ -366,7 +366,6 @@ void mpc_demux_get_info(mpc_demux * d, mpc_streaminfo * i)
 mpc_status mpc_demux_decode(mpc_demux * d, mpc_frame_info * i)
 {
 	mpc_bits_reader r;
-	int pos = 0;
 	if (d->si.stream_version >= 8) {
 		i->is_key_frame = MPC_FALSE;
 
@@ -379,7 +378,6 @@ mpc_status mpc_demux_decode(mpc_demux * d, mpc_frame_info * i)
 			}
 			mpc_demux_fill(d, 11, 0); // max header block size
 			mpc_bits_get_block(&d->bits_reader, &b);
-			pos = mpc_demux_pos(d) >> 3;
 			while( memcmp(b.key, "AP", 2) != 0 ) { // scan all blocks until audio
 				if (b.key[0] < 65 || b.key[0] > 90 || b.key[1] < 65 || b.key[1] > 90
 								|| b.size > (mpc_uint64_t) DEMUX_BUFFER_SIZE - 11)
@@ -424,8 +422,7 @@ mpc_status mpc_demux_decode(mpc_demux * d, mpc_frame_info * i)
 	return MPC_STATUS_OK;
 error:
 		i->bits = -1; // we pretend it's end of file
-		// return MPC_STATUS_INVALIDSV;
-		return pos;
+		return MPC_STATUS_INVALIDSV;
 }
 
 mpc_status mpc_demux_seek_second(mpc_demux * d, double seconds)

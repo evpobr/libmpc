@@ -176,7 +176,8 @@ main(int argc, char **argv)
 	}
 
 	// copy end of file
-	stream_size = (((mpc_demux_pos(demux) + 7) >> 3) - si.header_position + 3) & ~3;
+
+	stream_size = (((mpc_demux_pos(demux) + 7 - 20) >> 3) - si.header_position + 3) & ~3;
 	fseek(in_file, si.header_position + stream_size, SEEK_SET);
 	while((r_size = fread(buf, 1, TMP_BUF_SIZE, in_file))) {
 		if (fwrite(buf, 1, r_size, e.outputFile) != r_size) {

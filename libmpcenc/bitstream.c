@@ -132,9 +132,9 @@ static void encodeGolomb(mpc_encoder_t * e, mpc_uint32_t nb, mpc_uint_t k)
 	unsigned int l = (nb >> k) + 1;
 	nb &= (1 << k) - 1;
 
-	while( l > 32 ){
-		writeBits(e, 0, 32);
-		l -= 32;
+	while( l > 31 ){
+		writeBits(e, 0, 31);
+		l -= 31;
 	}
 	writeBits(e, 1, l);
 	writeBits(e, nb, k);

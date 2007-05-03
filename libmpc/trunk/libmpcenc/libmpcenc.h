@@ -94,6 +94,8 @@ typedef struct {
  mpc_uint32_t writeBlock ( mpc_encoder_t *, const char *, const mpc_bool_t, mpc_uint32_t);
  void writeMagic (mpc_encoder_t * e);
  void emptyBits(mpc_encoder_t * e);
+
+ /// maximum number of output bits is 31 !
  static mpc_inline void writeBits (mpc_encoder_t * e, mpc_uint32_t input, unsigned int bits )
  {
 	 e->outputBits += bits;

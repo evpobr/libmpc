@@ -1642,8 +1642,8 @@ mainloop ( int argc, char** argv )
 	}
 	if (NoSeekTable == 0) {
 		e.seek_ptr = ftell(e.outputFile);
-		writeBits (&e, 0, 8);
-		writeBits (&e, 0, 32); // jump 40 bits for seek table pointer
+		writeBits (&e, 0, 16);
+		writeBits (&e, 0, 24); // jump 40 bits for seek table pointer
 		writeBlock(&e, "SO", MPC_FALSE, 0); // reserve space for seek offset
 	}
 

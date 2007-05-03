@@ -148,13 +148,17 @@ main(int argc, char **argv)
 		mpc_frame_info frame;
 
 		demux->d->samples_to_skip = MPC_FRAME_LENGTH + MPC_DECODER_SYNTH_DELAY;
-		mpc_demux_decode(demux, &frame);
+		err = mpc_demux_decode(demux, &frame);
 
 		if(frame.bits == -1) break;
 
 		datacpy(demux->d, &e);
 		writeBitstream_SV8 ( &e, si.max_band); // write SV8-Bitstream
 	}
+
+	if (err != MPC_STATUS_OK)
+		fprintf(stderr, "An error occured while decoding, this file may be corrupted\n");
+
     // write the last incomplete block
 	if (e.framesInBlock != 0) {
 		if ((e.block_cnt & ((1 << e.seek_pwr) - 1)) == 0) {
@@ -192,5 +196,5 @@ main(int argc, char **argv)
 	mpc_reader_exit_stdio(&reader);
 	mpc_encoder_exit(&e);
 
-	return MPC_STATUS_OK;
+	return err;
 }

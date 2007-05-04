@@ -104,7 +104,7 @@ streaminfo_read_header_sv7(mpc_streaminfo* si, mpc_bits_reader * r)
 	mpc_uint32_t frames, last_frame_samples;
 
 	si->bitrate            = 0;
-	frames                 = mpc_bits_read(r, 32);
+	frames                 = (mpc_bits_read(r, 16) << 16) | mpc_bits_read(r, 16);
 	mpc_bits_read(r, 1); // intensity stereo : should be 0
 	si->ms                 = mpc_bits_read(r, 1);
 	si->max_band           = mpc_bits_read(r, 6);
@@ -184,7 +184,7 @@ streaminfo_read_header_sv8(mpc_streaminfo* si, const mpc_bits_reader * r_in,
 	mpc_uint32_t CRC;
 	mpc_bits_reader r = *r_in;
 
-	CRC = mpc_bits_read(&r, 32);
+	CRC = (mpc_bits_read(&r, 16) << 16) | mpc_bits_read(&r, 16);
 	if (CRC != crc32(r.buff + 1 - (r.count >> 3), (int)block_size - 4))
 		return MPC_STATUS_FILE;
 

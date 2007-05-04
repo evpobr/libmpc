@@ -43,6 +43,7 @@ extern const mpc_uint32_t Cnk[MAX_ENUM / 2][MAX_ENUM];
 extern const mpc_uint8_t Cnk_len[MAX_ENUM / 2][MAX_ENUM];
 extern const mpc_uint32_t Cnk_lost[MAX_ENUM / 2][MAX_ENUM];
 
+// can read up to 31 bits
 static mpc_inline mpc_uint32_t mpc_bits_read(mpc_bits_reader * r, const unsigned int nb_bits)
 {
 	mpc_uint32_t ret;
@@ -57,7 +58,7 @@ static mpc_inline mpc_uint32_t mpc_bits_read(mpc_bits_reader * r, const unsigned
 			ret |= r->buff[-4] << (32 - r->count);
 	}
 
-	return ret & (-1u >> (32 - nb_bits));
+	return ret & ((1 << nb_bits) - 1);
 }
 
 // basic huffman decoding routine

@@ -368,8 +368,11 @@ void mpc_decoder_read_bitstream_sv7(mpc_decoder * d, mpc_bits_reader * r)
     // first subband
 	d->Res_L[0] = mpc_bits_read(r, 4);
 	d->Res_R[0] = mpc_bits_read(r, 4);
-	if (d->ms && !(d->Res_L[0] == 0 && d->Res_R[0] == 0))
-        d->MS_Flag[0] = mpc_bits_read(r, 1);
+	if (!(d->Res_L[0] == 0 && d->Res_R[0] == 0)) {
+		if (d->ms)
+        	d->MS_Flag[0] = mpc_bits_read(r, 1);
+		Max_used_Band = 1;
+	}
 
     // consecutive subbands
 	for ( n = 1; n <= d->max_band; n++ ) {
@@ -382,11 +385,12 @@ void mpc_decoder_read_bitstream_sv7(mpc_decoder * d, mpc_bits_reader * r)
 		if (!(d->Res_L[n] == 0 && d->Res_R[n] == 0)) {
 			if (d->ms)
             	d->MS_Flag[n] = mpc_bits_read(r, 1);
-			Max_used_Band = n;
+			Max_used_Band = n + 1;
 		}
     }
+
     /****************************** SCFI ******************************/
-    for ( n = 0; n <= Max_used_Band; n++ ) {
+    for ( n = 0; n < Max_used_Band; n++ ) {
 		if (d->Res_L[n])
 			d->SCFI_L[n] = mpc_bits_huff_dec(r, mpc_table_HuffSCFI);
 		if (d->Res_R[n])
@@ -394,7 +398,7 @@ void mpc_decoder_read_bitstream_sv7(mpc_decoder * d, mpc_bits_reader * r)
     }
 
     /**************************** SCF/DSCF ****************************/
-    for ( n = 0; n <= Max_used_Band; n++ ) {
+    for ( n = 0; n < Max_used_Band; n++ ) {
 		mpc_int32_t * SCF = d->SCF_Index_L[n];
 		mpc_uint32_t Res  = d->Res_L[n], SCFI = d->SCFI_L[n];
 		do {
@@ -447,7 +451,7 @@ void mpc_decoder_read_bitstream_sv7(mpc_decoder * d, mpc_bits_reader * r)
 //         return;
 
     /***************************** Samples ****************************/
-    for ( n = 0; n <= Max_used_Band; n++ ) {
+    for ( n = 0; n < Max_used_Band; n++ ) {
 		mpc_int32_t *q = d->Q[n].L, Res = d->Res_L[n];
 		do {
 			mpc_int32_t k;
@@ -553,8 +557,6 @@ void mpc_decoder_read_bitstream_sv8(mpc_decoder * d, mpc_bits_reader * r, mpc_bo
 
 	for( n = Max_used_Band; n <= d->max_band; n++)
 		d->Res_L[n] = d->Res_R[n] = 0;
-
-
 
 	/****************************** SCFI ******************************/
 	if (is_key_frame == MPC_TRUE){

@@ -204,9 +204,9 @@ streaminfo_read_header_sv8(mpc_streaminfo* si, const mpc_bits_reader * r_in,
 
 	si->bitrate = 0;
 
-	if (si->samples != 0)
+	if ((si->samples - si->beg_silence) != 0)
 		si->average_bitrate = (si->tag_offset - si->header_position) * 8.0
-				*  si->sample_freq / si->samples;
+				*  si->sample_freq / (si->samples - si->beg_silence);
 
 	return MPC_STATUS_OK;
 }
@@ -230,10 +230,10 @@ void  streaminfo_encoder_info(mpc_streaminfo* si, const mpc_bits_reader * r_in)
 double
 mpc_streaminfo_get_length(mpc_streaminfo * si)
 {
-    return (double) si->samples / si->sample_freq;
+	return (double) (si->samples - si->beg_silence) / si->sample_freq;
 }
 
 mpc_int64_t mpc_streaminfo_get_length_samples(mpc_streaminfo *si)
 {
-	return si->samples;
+	return si->samples - si->beg_silence;
 }

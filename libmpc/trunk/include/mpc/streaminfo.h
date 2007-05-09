@@ -79,7 +79,6 @@ typedef struct mpc_streaminfo {
     mpc_uint32_t         is_true_gapless;    ///< True gapless? (0: no, 1: yes)
 	mpc_uint64_t         samples;            ///< Number of samples in the stream
 	mpc_uint64_t         beg_silence;        ///< Number of samples that must not be played at the beginning of the stream
-	mpc_uint64_t         end_silence;        ///< Number of samples that must not be played at the end of the stream
     //@}
 
 	/// @name Encoder informations

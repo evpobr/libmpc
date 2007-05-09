@@ -104,7 +104,6 @@ void mpc_decoder_setup(mpc_decoder *d)
 
 	d->__r1 = 1;
 	d->__r2 = 1;
-	d->samples_to_skip = MPC_DECODER_SYNTH_DELAY;
 
 	mpc_decoder_init_quant(d, 1.0f);
 }
@@ -115,6 +114,7 @@ void mpc_decoder_set_streaminfo(mpc_decoder *d, mpc_streaminfo *si)
 	d->ms                 = si->ms;
 	d->max_band           = si->max_band;
 	d->channels           = si->channels;
+	d->samples_to_skip    = MPC_DECODER_SYNTH_DELAY + si->beg_silence;
 
 	if (si->stream_version == 7 && si->is_true_gapless)
 		d->samples = ((si->samples + MPC_FRAME_LENGTH - 1) / MPC_FRAME_LENGTH) * MPC_FRAME_LENGTH;

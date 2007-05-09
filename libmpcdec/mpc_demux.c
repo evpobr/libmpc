@@ -434,6 +434,7 @@ mpc_status mpc_demux_seek_sample(mpc_demux * d, mpc_uint64_t destsample)
 	mpc_uint32_t fwd, samples_to_skip, fpos, i;
 	mpc_uint32_t block_samples = MPC_FRAME_LENGTH << d->si.block_pwr;
 
+	destsample += d->si.beg_silence;
 	if (destsample > d->si.samples) destsample = d->si.samples;
 	fwd = (mpc_uint32_t) (destsample / block_samples);
 	samples_to_skip = MPC_DECODER_SYNTH_DELAY +

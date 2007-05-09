@@ -36,6 +36,7 @@
 #include <time.h>
 #include <mpc/mpcdec.h>
 #include <libwaveformat.h>
+#include <unistd.h>
 
 #ifdef WIN32
 #include <crtdbg.h>
@@ -53,10 +54,38 @@ t_wav_uint32 mpc_wav_output_seek(void* p_user_data, t_wav_uint32 p_position)
     return (t_wav_uint32) !fseek(p_handle, p_position, SEEK_SET);
 }
 
+static void print_info(mpc_streaminfo * info, char * filename)
+{
+	int time = (int) mpc_streaminfo_get_length(info);
+	int minutes = time / 60;
+	int seconds = time % 60;
+
+	printf("file: %s\n", filename);
+	printf("stream version %d\n", info->stream_version);
+	printf("encoder: \%s\n", info->encoder);
+	printf("profile: \%s (q=%0.2f)\n", info->profile_name, info->profile - 5);
+	printf("PNS: \%s\n", info->pns == 0xFF ? "unknow" : info->pns ? "on" : "off");
+	printf("mid/side stereo: %s\n", info->ms ? "on" : "off");
+	printf("gapless: \%s\n", info->is_true_gapless ? "on" : "off");
+	printf("average bitrate: \%6.1f kbps\n", info->average_bitrate * 1.e-3);
+	printf("samplerate: \%d Hz\n", info->sample_freq);
+	printf("channels: \%d\n", info->channels);
+	printf("length: \%d:\%.2d (%u samples)\n", minutes, seconds, (mpc_uint32_t)mpc_streaminfo_get_length_samples(info));
+	printf("file size: \%d Bytes\n", info->total_file_length);
+	printf("track peak: \%2.2f dB\n", info->peak_title / 256.);
+	printf("track gain: \%2.2f dB\n", info->gain_title / 256.);
+	printf("album peak: \%2.2f dB\n", info->peak_album / 256.);
+	printf("album gain: \%2.2f dB\n", info->gain_album / 256.);
+	printf("\n");
+
+}
+
 static void
 usage(const char *exename)
 {
-    printf("Usage: %s <infile.mpc> [<outfile.wav>]\n", exename);
+    printf("Usage: %s [-i] [-h] <infile.mpc> [<outfile.wav>]\n"
+			"-i : print file information on stdout\n"
+			"-h : print this help\n", exename);
 }
 
 int
@@ -66,32 +95,55 @@ main(int argc, char **argv)
 	mpc_demux* demux;
 	mpc_streaminfo si;
 	mpc_status err;
+	mpc_bool_t info = MPC_FALSE;
     MPC_SAMPLE_FORMAT sample_buffer[MPC_DECODER_BUFFER_LENGTH];
     clock_t begin, end, sum; int total_samples; t_wav_output_file wav_output;
-    mpc_bool_t is_wav_output;
+	mpc_bool_t is_wav_output;
+	int c;
+	extern char * optarg;
+	extern int optind;
 
     printf("mpcdec - musepack (mpc) decoder sample application\n");
-    if(3 < argc && argc < 2)
+
+	while ((c = getopt(argc , argv, "ih")) != -1) {
+		switch (c) {
+			case 'i':
+				info = MPC_TRUE;
+				break;
+			case 'h':
+				usage(argv[0]);
+				return 0;
+		}
+	}
+
+	if(2 < argc - optind && argc - optind < 1)
     {
         usage(argv[0]);
         return 0;
     }
 
-    err = mpc_reader_init_stdio(&reader, argv[1]);
+	err = mpc_reader_init_stdio(&reader, argv[optind]);
     if(err < 0) return !MPC_STATUS_OK;
 
     demux = mpc_demux_init(&reader);
     if(!demux) return !MPC_STATUS_OK;
     mpc_demux_get_info(demux,  &si);
 
-    is_wav_output = argc > 2;
+	if (info == MPC_TRUE) {
+		print_info(&si, argv[optind]);
+		mpc_demux_exit(demux);
+		mpc_reader_exit_stdio(&reader);
+		return 0;
+	}
+
+	is_wav_output = argc - optind > 1;
     if(is_wav_output)
     {
         t_wav_output_file_callback wavo_fc;
         memset(&wav_output, 0, sizeof wav_output);
         wavo_fc.m_seek      = mpc_wav_output_seek;
         wavo_fc.m_write     = mpc_wav_output_write;
-        wavo_fc.m_user_data = fopen(argv[2], "wb");
+		wavo_fc.m_user_data = fopen(argv[optind + 1], "wb");
         if(!wavo_fc.m_user_data) return !MPC_STATUS_OK;
         err = waveformat_output_open(&wav_output, wavo_fc, si.channels, 16, 0, si.sample_freq, (t_wav_uint32) si.samples * 2);
         if(!err) return !MPC_STATUS_OK;

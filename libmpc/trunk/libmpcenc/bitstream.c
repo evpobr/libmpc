@@ -189,15 +189,16 @@ mpc_uint32_t writeBlock ( mpc_encoder_t * e, const char * key, const mpc_bool_t 
 	emptyBits(e);
 
 	// write block header (key / length)
-	len = e->pos + 2 + (addCRC > 0) * 4;
+	len = e->pos + (addCRC > 0) * 4;
 	if (min_size <= len)
 		min_size = len;
 	else {
 		mpc_uint32_t pad = min_size - len, i;
 		for(i = 0; i < pad; i++)
 			writeBits(e, 0, 8);
+		emptyBits(e);
 	}
-	len = encodeSize(min_size, blockSize, MPC_TRUE);
+	len = encodeSize(min_size + 2, blockSize, MPC_TRUE);
 	fwrite(key, sizeof(char), 2, fp);
 	fwrite(blockSize, sizeof(char), len, fp);
 	e->outputBits += (len + 2) * 8;

@@ -73,9 +73,9 @@ static void print_info(mpc_streaminfo * info, char * filename)
 	printf("length: \%d:\%.2d (%u samples)\n", minutes, seconds, (mpc_uint32_t)mpc_streaminfo_get_length_samples(info));
 	printf("file size: \%d Bytes\n", info->total_file_length);
 	printf("track peak: \%2.2f dB\n", info->peak_title / 256.);
-	printf("track gain: \%2.2f dB\n", info->gain_title / 256.);
+	printf("track gain: \%2.2f dB / %2.2f dB\n", info->gain_title / 256., info->gain_title == 0 ? 0 : 65. - info->gain_title / 256.);
 	printf("album peak: \%2.2f dB\n", info->peak_album / 256.);
-	printf("album gain: \%2.2f dB\n", info->gain_album / 256.);
+	printf("album gain: \%2.2f dB / %2.2f dB\n", info->gain_album / 256., info->gain_album == 0 ? 0 : 65. - info->gain_album / 256.);
 	printf("\n");
 
 }

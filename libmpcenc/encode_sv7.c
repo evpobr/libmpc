@@ -114,7 +114,6 @@ writeStreamInfo ( mpc_encoder_t*e,
 	for( i = 0; i < len; i++) // nb of samples
 		writeBits ( e, tmp[i], 8 );
 	writeBits ( e, 0, 8 ); // nb of samples to skip at beginning
-	writeBits ( e, 0, 8 ); // nb of samples to skip at end
 
 	switch ( SampleFreq ) {
 		case 44100: writeBits ( e, 0, 3 ); break;

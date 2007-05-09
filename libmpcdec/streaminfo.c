@@ -92,7 +92,7 @@ mpc_get_encoder_string(mpc_streaminfo* si)
 		if (minor & 1)
 			tmp = "--Unstable--";
 
-		sprintf(si->encoder, "%s %u.%u build %u", tmp, major, minor, build);
+		sprintf(si->encoder, "%s %u.%u.%u", tmp, major, minor, build);
 	}
 }
 
@@ -194,7 +194,6 @@ streaminfo_read_header_sv8(mpc_streaminfo* si, const mpc_bits_reader * r_in,
 
 	mpc_bits_get_size(&r, &si->samples);
 	mpc_bits_get_size(&r, &si->beg_silence);
-	mpc_bits_get_size(&r, &si->end_silence);
 
 	si->is_true_gapless = 1;
 	si->sample_freq = samplefreqs[mpc_bits_read(&r, 3)];

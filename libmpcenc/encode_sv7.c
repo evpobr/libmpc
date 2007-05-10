@@ -102,6 +102,7 @@ writeStreamInfo ( mpc_encoder_t*e,
 				  const unsigned int  MaxBand,
                   const unsigned int  MS_on,
                   const unsigned int  SamplesCount,
+				  const unsigned int  SamplesSkip,
                   const unsigned int  SampleFreq,
 				  const unsigned int  ChannelCount)
 {
@@ -113,7 +114,9 @@ writeStreamInfo ( mpc_encoder_t*e,
 	len = encodeSize(SamplesCount, (char *)tmp, MPC_FALSE);
 	for( i = 0; i < len; i++) // nb of samples
 		writeBits ( e, tmp[i], 8 );
-	writeBits ( e, 0, 8 ); // nb of samples to skip at beginning
+	len = encodeSize(SamplesSkip, (char *)tmp, MPC_FALSE);
+	for( i = 0; i < len; i++) // nb of samples to skip at beginning
+		writeBits ( e, tmp[i], 8 );
 
 	switch ( SampleFreq ) {
 		case 44100: writeBits ( e, 0, 3 ); break;

@@ -33,7 +33,7 @@
 */
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+#include <getopt.h>
 
 #include <mpc/mpcdec.h>
 #include "../libmpcenc/libmpcenc.h"
@@ -74,8 +74,6 @@ int main(int argc, char **argv)
 	mpc_int64_t start_sample = 0, end_sample = 0;
 	mpc_uint32_t beg_silence, start_block, block_num, i;
 	int c;
-	extern char * optarg;
-	extern int optind;
 	FILE * in_file;
 
 	printf("mpccut - musepack (mpc) stream cutter\n");

@@ -36,7 +36,7 @@
 #include <time.h>
 #include <mpc/mpcdec.h>
 #include <libwaveformat.h>
-#include <unistd.h>
+#include <getopt.h>
 
 #ifdef WIN32
 #include <crtdbg.h>
@@ -62,20 +62,20 @@ static void print_info(mpc_streaminfo * info, char * filename)
 
 	printf("file: %s\n", filename);
 	printf("stream version %d\n", info->stream_version);
-	printf("encoder: \%s\n", info->encoder);
-	printf("profile: \%s (q=%0.2f)\n", info->profile_name, info->profile - 5);
-	printf("PNS: \%s\n", info->pns == 0xFF ? "unknow" : info->pns ? "on" : "off");
+	printf("encoder: %s\n", info->encoder);
+	printf("profile: %s (q=%0.2f)\n", info->profile_name, info->profile - 5);
+	printf("PNS: %s\n", info->pns == 0xFF ? "unknow" : info->pns ? "on" : "off");
 	printf("mid/side stereo: %s\n", info->ms ? "on" : "off");
-	printf("gapless: \%s\n", info->is_true_gapless ? "on" : "off");
-	printf("average bitrate: \%6.1f kbps\n", info->average_bitrate * 1.e-3);
-	printf("samplerate: \%d Hz\n", info->sample_freq);
-	printf("channels: \%d\n", info->channels);
-	printf("length: \%d:\%.2d (%u samples)\n", minutes, seconds, (mpc_uint32_t)mpc_streaminfo_get_length_samples(info));
-	printf("file size: \%d Bytes\n", info->total_file_length);
-	printf("track peak: \%2.2f dB\n", info->peak_title / 256.);
-	printf("track gain: \%2.2f dB / %2.2f dB\n", info->gain_title / 256., info->gain_title == 0 ? 0 : 65. - info->gain_title / 256.);
-	printf("album peak: \%2.2f dB\n", info->peak_album / 256.);
-	printf("album gain: \%2.2f dB / %2.2f dB\n", info->gain_album / 256., info->gain_album == 0 ? 0 : 65. - info->gain_album / 256.);
+	printf("gapless: %s\n", info->is_true_gapless ? "on" : "off");
+	printf("average bitrate: %6.1f kbps\n", info->average_bitrate * 1.e-3);
+	printf("samplerate: %d Hz\n", info->sample_freq);
+	printf("channels: %d\n", info->channels);
+	printf("length: %d:%.2d (%u samples)\n", minutes, seconds, (mpc_uint32_t)mpc_streaminfo_get_length_samples(info));
+	printf("file size: %d Bytes\n", info->total_file_length);
+	printf("track peak: %2.2f dB\n", info->peak_title / 256.);
+	printf("track gain: %2.2f dB / %2.2f dB\n", info->gain_title / 256., info->gain_title == 0 ? 0 : 65. - info->gain_title / 256.);
+	printf("album peak: %2.2f dB\n", info->peak_album / 256.);
+	printf("album gain: %2.2f dB / %2.2f dB\n", info->gain_album / 256., info->gain_album == 0 ? 0 : 65. - info->gain_album / 256.);
 	printf("\n");
 
 }
@@ -100,8 +100,6 @@ main(int argc, char **argv)
     clock_t begin, end, sum; int total_samples; t_wav_output_file wav_output;
 	mpc_bool_t is_wav_output;
 	int c;
-	extern char * optarg;
-	extern int optind;
 
     printf("mpcdec - musepack (mpc) decoder sample application\n");
 

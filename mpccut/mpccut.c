@@ -41,6 +41,10 @@
 #include "../libmpcdec/huffman.h"
 #include "../libmpcdec/mpc_bits_reader.h"
 
+#ifdef _MSC_VER
+#define atoll _atoi64
+#endif
+
 static void copy_data(FILE * in_file, int in_file_pos, FILE * out_file, int data_size)
 {
 	char * buff[512];

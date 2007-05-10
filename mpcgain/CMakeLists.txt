@@ -4,7 +4,7 @@ FIND_PATH(REPLAY_GAIN_INCLUDE_DIR replaygain/gain_analysis.h
 	${libmpc_SOURCE_DIR}/../libreplaygain/include
 )
 
-FIND_LIBRARY(REPLAY_GAIN_LIBRARY NAMES replaygain PATHS
+FIND_LIBRARY(REPLAY_GAIN_LIBRARY NAMES replaygain replaygain_static PATHS
 	/usr/lib
 	/usr/local/lib
 	${libmpc_SOURCE_DIR}/../libreplaygain/bin/src/release

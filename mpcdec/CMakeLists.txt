@@ -5,7 +5,12 @@ link_directories(${libmpc_BINARY_DIR}/libwavformat)
 include_directories(${libmpc_SOURCE_DIR}/libmpcdec)
 link_directories(${libmpc_BINARY_DIR}/libmpcdec)
 
-add_executable(mpcdec mpcdec.c)
+if(MSVC)
+include_directories(${libmpc_SOURCE_DIR}/win32)
+add_executable(mpcdec mpcdec ${libmpc_SOURCE_DIR}/win32/attgetopt)
+endif(MSVC)
+
+add_executable(mpcdec mpcdec)
 
 if(NOT MSVC)
 target_link_libraries(mpcdec m)

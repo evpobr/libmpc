@@ -1631,7 +1631,7 @@ mainloop ( int argc, char** argv )
 	e.MS_Channelmode = m.MS_Channelmode;
 	e.seek_ref = ftell(e.outputFile);
 	writeMagic(&e);
-	writeStreamInfo ( &e, m.Max_Band, m.MS_Channelmode > 0, SamplesInWAVE,
+	writeStreamInfo ( &e, m.Max_Band, m.MS_Channelmode > 0, SamplesInWAVE, 0,
 					   m.SampleFreq, Wave.Channels > 2 ? 2 : Wave.Channels);
 	si_size = writeBlock(&e, "SH", MPC_TRUE, 0);
 	writeGainInfo ( &e, 0, 0, 0, 0);
@@ -1761,7 +1761,7 @@ mainloop ( int argc, char** argv )
 	if (SamplesInWAVE != AllSamplesRead) {
 		SamplesInWAVE = AllSamplesRead;
 		fseek(e.outputFile, e.seek_ref + 4, SEEK_SET);
-		writeStreamInfo ( &e, m.Max_Band, m.MS_Channelmode > 0, SamplesInWAVE,
+		writeStreamInfo ( &e, m.Max_Band, m.MS_Channelmode > 0, SamplesInWAVE, 0,
 						   m.SampleFreq, Wave.Channels > 2 ? 2 : Wave.Channels);
 		writeBlock(&e, "SH", MPC_TRUE, si_size);
 		fseek(e.outputFile, 0, SEEK_END);

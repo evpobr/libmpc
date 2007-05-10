@@ -131,7 +131,7 @@ main(int argc, char **argv)
 	// stream conversion
 	e.seek_ref = ftell(e.outputFile);
 	writeMagic(&e);
-	writeStreamInfo( &e, si.max_band, si.ms > 0, si.samples, si.sample_freq,
+	writeStreamInfo( &e, si.max_band, si.ms > 0, si.samples, 0, si.sample_freq,
 					  si.channels);
 	si_size = writeBlock(&e, "SH", MPC_TRUE, 0);
 	writeGainInfo(&e, si.gain_title, si.peak_title, si.gain_album, si.peak_album);
@@ -173,7 +173,7 @@ main(int argc, char **argv)
 	writeBlock(&e, "SE", MPC_FALSE, 0); // write end of stream block
 	if (demux->d->samples != si.samples) {
 		fseek(e.outputFile, e.seek_ref + 4, SEEK_SET);
-		writeStreamInfo( &e, si.max_band, si.ms > 0, demux->d->samples,
+		writeStreamInfo( &e, si.max_band, si.ms > 0, demux->d->samples, 0,
 						  si.sample_freq, si.channels);
 		writeBlock(&e, "SH", MPC_TRUE, si_size);
 		fseek(e.outputFile, 0, SEEK_END);

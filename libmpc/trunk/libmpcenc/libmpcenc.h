@@ -78,6 +78,7 @@ typedef struct {
 						const unsigned int  MaxBand,
 						const unsigned int  MS_on,
 						const unsigned int  SamplesCount,
+						const unsigned int  SamplesSkip,
 						const unsigned int  SampleFreq,
 						const unsigned int  ChannelCount);
  void writeGainInfo ( mpc_encoder_t * e,

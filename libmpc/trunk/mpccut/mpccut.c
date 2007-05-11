@@ -124,7 +124,8 @@ int main(int argc, char **argv)
 
 	beg_silence = start_sample % (MPC_FRAME_LENGTH << si.block_pwr);
 	start_block = start_sample / (MPC_FRAME_LENGTH << si.block_pwr);
-	block_num = end_sample / (MPC_FRAME_LENGTH << si.block_pwr) - start_block;
+	block_num = (end_sample + (MPC_FRAME_LENGTH << si.block_pwr) - 1) /
+			 (MPC_FRAME_LENGTH << si.block_pwr) - start_block;
 	end_sample -= start_block * (MPC_FRAME_LENGTH << si.block_pwr);
 
 	mpc_encoder_init(&e, end_sample, si.block_pwr, 1);

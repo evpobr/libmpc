@@ -1732,15 +1732,16 @@ mainloop ( int argc, char** argv )
         memmove ( Main.M, Main.M + BLOCK, CENTER * sizeof(float) );
         memmove ( Main.S, Main.S + BLOCK, CENTER * sizeof(float) );
 
+        // adapt SamplesInWAV to the real number of contained samples
+		if ( myfeof (Wave.fp) ) {
+			stderr_printf ( "WAVE file has incorrect header: header: %.3f s, contents: %.3f s    \n",
+							(long double)(SamplesInWAVE) / m.SampleFreq, (long double)(AllSamplesRead) / m.SampleFreq);
+			break;
+		}
+
         // read samples
         CurrentRead     = Read_WAV_Samples ( &Wave, (int)minf(BLOCK, SamplesInWAVE - AllSamplesRead), &Main, CENTER, ScalingFactorl, ScalingFactorr, &Silence );
         AllSamplesRead += CurrentRead;
-
-        // adapt SamplesInWAV to the real number of contained samples
-        if ( myfeof (Wave.fp) ) {
-			stderr_printf ( "WAVE file has incorrect header: header: %.3f s, contents: %.3f s    \n",
-							(long double)(SamplesInWAVE) / m.SampleFreq, (long double)(AllSamplesRead) / m.SampleFreq);
-        }
     }
 
     // write the last incomplete block

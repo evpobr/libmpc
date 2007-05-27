@@ -153,7 +153,6 @@ longhelp ( PsyModel * m )
     stderr_printf (
              "\033[1m\rInput_File must be of the following:\033[0m\n"
              "  -                stdin                 (only RIFF WAVE files)\n"
-             "  /dev/audio       soundcard             (using OSS, 44.1 kHz)\n"
              "  *.wav            RIFF WAVE file\n"
              "  *.raw/cdr        Raw PCM               (2ch, 16bit, 44.1kHz)\n"
              "  *.pac/lpac       LPAC file             (Windows Only)\n"

@@ -114,7 +114,7 @@ main(int argc, char **argv)
 		}
 	}
 
-	if(2 < argc - optind && argc - optind < 1)
+	if(2 < argc - optind || argc - optind < 1)
     {
         usage(argv[0]);
         return 0;

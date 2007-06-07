@@ -2,8 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8,00"
-	Name="mpcenc"
-	ProjectGUID="{15082E34-9324-469F-8423-F995B4814A37}"
+	Name="mpc2sv8"
+	ProjectGUID="{36225C6A-FFA3-4E70-928E-1F69F7A3FCE1}"
 	RootNamespace="mppenc"
 	Keyword="Win32Proj"
 	>

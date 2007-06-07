@@ -149,7 +149,7 @@
 	</References>
 	<Files>
 		<Filter
-			Name="Headers"
+			Name="headers"
 			>
 			<File
 				RelativePath="..\libmpcdec\decoder.h"
@@ -177,7 +177,7 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="Sources"
+			Name="sources"
 			>
 			<File
 				RelativePath="..\libmpcdec\huffman.c"
@@ -213,7 +213,7 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="Interface"
+			Name="interface"
 			>
 			<File
 				RelativePath="..\include\mpc\datatypes.h"

@@ -184,62 +184,12 @@
 	</References>
 	<Files>
 		<Filter
-			Name="Source Files"
-			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
-			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
-			>
-			<File
-				RelativePath="..\mpcenc\keyboard.c"
-				>
-			</File>
-			<File
-				RelativePath="..\mpcenc\mpcenc.c"
-				>
-			</File>
-			<File
-				RelativePath="..\mpcenc\pipeopen.c"
-				>
-			</File>
-			<File
-				RelativePath="..\mpcenc\stderr.c"
-				>
-			</File>
-			<File
-				RelativePath="..\mpcenc\tags.c"
-				>
-			</File>
-			<File
-				RelativePath="..\mpcenc\wave_in.c"
-				>
-			</File>
-			<File
-				RelativePath="..\mpcenc\winmsg.c"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Header Files"
+			Name="sources"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\mpcenc\config.h"
-				>
-			</File>
-			<File
-				RelativePath="..\mpcenc\mpcenc.h"
-				>
-			</File>
-			<File
-				RelativePath="..\mpcenc\mpp.h"
-				>
-			</File>
-			<File
-				RelativePath="..\mpcenc\mppdec.h"
-				>
-			</File>
-			<File
-				RelativePath="..\mpcenc\predict.h"
+				RelativePath="..\mpc2sv8\mpc2sv8.c"
 				>
 			</File>
 		</Filter>

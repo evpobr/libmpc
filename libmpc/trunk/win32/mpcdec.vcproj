@@ -62,7 +62,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libmpcdec_d.lib libwavformat_d.lib"
 				OutputFile="$(OutDir)\$(ProjectName)_d.exe"
 				AdditionalLibraryDirectories="../bin"
 				GenerateManifest="false"
@@ -145,7 +144,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libmpcdec.lib libwavformat.lib"
 				AdditionalLibraryDirectories="../bin"
 				GenerateManifest="false"
 				SubSystem="1"
@@ -186,22 +184,10 @@
 	</References>
 	<Files>
 		<Filter
-			Name="Sources"
+			Name="sources"
 			>
-			<File
-				RelativePath=".\attgetopt.c"
-				>
-			</File>
 			<File
 				RelativePath="..\mpcdec\mpcdec.c"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Headers"
-			>
-			<File
-				RelativePath=".\getopt.h"
 				>
 			</File>
 		</Filter>

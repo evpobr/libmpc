@@ -189,7 +189,19 @@
 			Name="Sources"
 			>
 			<File
+				RelativePath=".\attgetopt.c"
+				>
+			</File>
+			<File
 				RelativePath="..\mpcdec\mpcdec.c"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Headers"
+			>
+			<File
+				RelativePath=".\getopt.h"
 				>
 			</File>
 		</Filter>

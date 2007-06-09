@@ -124,7 +124,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="../include;../libmpcenc;../libmpcpsy"
-				PreprocessorDefinitions="_WIN32;WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;MPP_ENCODER"
+				PreprocessorDefinitions="_WIN32;WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;MPP_ENCODER;FAST_MATH;CVD_FASTLOG"
 				ExceptionHandling="0"
 				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"

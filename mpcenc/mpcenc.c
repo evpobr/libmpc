@@ -1812,6 +1812,10 @@ main ( int argc, char** argv )
     if ( argc < 2  ||  ( 0 != strcmp (argv[1], "--silent")  &&  0 != strcmp (argv[1], "--quiet")) )
         (void) stderr_printf ("\r\x1B[1m\r%s\n\x1B[0m\r     \r", About );
 
+#ifdef FAST_MATH
+    Init_FastMath ();
+#endif
+
     // no arguments or call for help
     if ( argc < 2  ||  0==strcmp (argv[1],"-h")  ||  0==strcmp (argv[1],"-?")  ||  0==strcmp (argv[1],"--help") ) {
 		PsyModel m;

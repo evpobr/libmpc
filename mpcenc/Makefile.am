@@ -1,7 +1,8 @@
 bin_PROGRAMS = mpcenc
 
 common_sources = ../common/crc32.c \
-		../common/huffman-bcl.c
+		../common/huffman-bcl.c \
+		../common/fastmath.c
 
 # set the include path found by configure
 INCLUDES = -I$(top_srcdir)/libmpcenc -I$(top_srcdir)/libmpcpsy \

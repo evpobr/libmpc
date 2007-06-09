@@ -170,6 +170,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\common\fastmath.c"
+				>
+			</File>
+			<File
 				RelativePath="..\libmpcpsy\fft4g.c"
 				>
 			</File>

@@ -6,6 +6,8 @@ project(libmpc C)
 set(CMAKE_VERBOSE_MAKEFILE false)
 TEST_BIG_ENDIAN(MPC_ENDIANNESS)
 
+add_definitions(-DFAST_MATH -DCVD_FASTLOG)
+
 if(NOT MSVC)
 set(CMAKE_C_FLAGS "-O3 -fomit-frame-pointer -pipe")
 endif(NOT MSVC)

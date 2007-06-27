@@ -69,6 +69,7 @@ mpc_demux_fill(mpc_demux * d, mpc_uint32_t min_bytes, int flags)
 {
 	mpc_uint32_t unread_bytes = d->bytes_total + d->buffer - d->bits_reader.buff
 			- ((8 - d->bits_reader.count) >> 3);
+	int offset = 0;
 
 	if (min_bytes == 0 || min_bytes > DEMUX_BUFFER_SIZE ||
 		    (unread_bytes < min_bytes && flags & MPC_BUFFER_FULL))
@@ -78,17 +79,20 @@ mpc_demux_fill(mpc_demux * d, mpc_uint32_t min_bytes, int flags)
 		mpc_uint32_t bytes2read = min_bytes - unread_bytes;
 		mpc_uint32_t bytes_free = DEMUX_BUFFER_SIZE - d->bytes_total;
 
-		if (flags & MPC_BUFFER_SWAP)
+		if (flags & MPC_BUFFER_SWAP) {
 			bytes2read &= -1 << 2;
+			offset = (unread_bytes + 3) & ( -1 << 2);
+			offset -= unread_bytes;
+		}
 
 		if (bytes2read > bytes_free) {
 			if (d->bits_reader.count == 0) {
 				d->bits_reader.count = 8;
 				d->bits_reader.buff++;
 			}
-			memmove(d->buffer, d->bits_reader.buff, unread_bytes);
-			d->bits_reader.buff = d->buffer;
-			d->bytes_total = unread_bytes;
+			memmove(d->buffer + offset, d->bits_reader.buff, unread_bytes);
+			d->bits_reader.buff = d->buffer + offset;
+			d->bytes_total = unread_bytes + offset;
 		}
 		bytes2read = d->r->read(d->r, d->buffer + d->bytes_total, bytes2read);
 		if (flags & MPC_BUFFER_SWAP){

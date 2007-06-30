@@ -106,7 +106,7 @@ static mpc_inline mpc_int32_t mpc_bits_huff_lut(mpc_bits_reader * r, const mpc_l
 	mpc_uint16_t code;
 	mpc_huff_lut tmp;
 	const mpc_huffman * Table;
-	code = ((r->buff[0] << 16) | (r->buff[1] << 8) | r->buff[2]) >> r->count;
+	code = (mpc_uint16_t)(((r->buff[0] << 16) | (r->buff[1] << 8) | r->buff[2]) >> r->count);
 
 	tmp = lut->lut[code >> (16 - LUT_DEPTH)];
 	if (tmp.Length != 0) {

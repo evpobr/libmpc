@@ -35,6 +35,8 @@
 #include <assert.h>
 #include <time.h>
 #include <mpc/mpcdec.h>
+#include "../libmpcdec/decoder.h"
+#include "../libmpcdec/internal.h"
 #include <libwaveformat.h>
 #include <getopt.h>
 
@@ -85,6 +87,8 @@ usage(const char *exename)
 {
     printf("Usage: %s [-i] [-h] <infile.mpc> [<outfile.wav>]\n"
 			"-i : print file information on stdout\n"
+			"-c : check the file for stream errors\n"
+			"     (doesn't fully decode, outfile will be ignored)\n"
 			"-h : print this help\n", exename);
 }
 
@@ -95,18 +99,20 @@ main(int argc, char **argv)
 	mpc_demux* demux;
 	mpc_streaminfo si;
 	mpc_status err;
-	mpc_bool_t info = MPC_FALSE;
+	mpc_bool_t info = MPC_FALSE, is_wav_output = MPC_FALSE, check = MPC_FALSE;
     MPC_SAMPLE_FORMAT sample_buffer[MPC_DECODER_BUFFER_LENGTH];
     clock_t begin, end, sum; int total_samples; t_wav_output_file wav_output;
-	mpc_bool_t is_wav_output;
 	int c;
 
     printf("mpcdec - musepack (mpc) decoder sample application\n");
 
-	while ((c = getopt(argc , argv, "ih")) != -1) {
+	while ((c = getopt(argc , argv, "ihc")) != -1) {
 		switch (c) {
 			case 'i':
 				info = MPC_TRUE;
+				break;
+			case 'c':
+				check = MPC_TRUE;
 				break;
 			case 'h':
 				usage(argv[0]);
@@ -134,7 +140,8 @@ main(int argc, char **argv)
 		return 0;
 	}
 
-	is_wav_output = argc - optind > 1;
+	if (!check)
+		is_wav_output = argc - optind > 1;
     if(is_wav_output)
     {
         t_wav_output_file_callback wavo_fc;
@@ -153,6 +160,8 @@ main(int argc, char **argv)
         mpc_frame_info frame;
 
         frame.buffer = sample_buffer;
+	    if (check)
+		    demux->d->samples_to_skip = MPC_FRAME_LENGTH + MPC_DECODER_SYNTH_DELAY;
         begin        = clock();
         err = mpc_demux_decode(demux, &frame);
         end          = clock();
@@ -181,15 +190,19 @@ main(int argc, char **argv)
 
 	if (err != MPC_STATUS_OK)
 		printf("An error occured while decoding\n");
+	else if (check)
+		printf("No error found\n");
 
-    printf("%u samples ", total_samples);
-	if (sum <= 0) sum = 1;
-	total_samples = (mpc_uint32_t) ((mpc_uint64_t) total_samples * CLOCKS_PER_SEC * 100 / ((mpc_uint64_t)si.sample_freq * sum));
-    printf("decoded in %u ms (%u.%02ux)\n",
-		   (unsigned int) (sum * 1000 / CLOCKS_PER_SEC),
-           total_samples / 100,
-           total_samples % 100
-           );
+	if (!check) {
+		printf("%u samples ", total_samples);
+		if (sum <= 0) sum = 1;
+		total_samples = (mpc_uint32_t) ((mpc_uint64_t) total_samples * CLOCKS_PER_SEC * 100 / ((mpc_uint64_t)si.sample_freq * sum));
+		printf("decoded in %u ms (%u.%02ux)\n",
+			(unsigned int) (sum * 1000 / CLOCKS_PER_SEC),
+			total_samples / 100,
+			total_samples % 100
+			);
+	}
 
     mpc_demux_exit(demux);
     mpc_reader_exit_stdio(&reader);

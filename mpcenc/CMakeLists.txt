@@ -1,5 +1,3 @@
-add_definitions(-DMPP_ENCODER -DFAST_MATH -DCVD_FASTLOG)
-
 if(MPC_ENDIANNESS)
 add_definitions(-DMPC_BIG_ENDIAN)
 endif(MPC_ENDIANNESS)

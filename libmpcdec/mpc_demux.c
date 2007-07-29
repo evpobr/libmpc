@@ -419,7 +419,7 @@ mpc_status mpc_demux_decode(mpc_demux * d, mpc_frame_info * i)
 		if (i->bits != -1 && d->block_bits != ((d->bits_reader.buff - r.buff) << 3) + r.count - d->bits_reader.count)
 			goto error;
 	}
-	if (d->buffer + d->bytes_total < d->bits_reader.buff + ((8 - d->bits_reader.count) >> 3))
+	if (i->bits != -1 && d->buffer + d->bytes_total < d->bits_reader.buff + ((8 - d->bits_reader.count) >> 3))
 		goto error;
 
 	return MPC_STATUS_OK;

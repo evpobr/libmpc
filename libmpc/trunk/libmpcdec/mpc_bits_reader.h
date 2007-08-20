@@ -66,7 +66,7 @@ static mpc_inline mpc_uint32_t mpc_bits_read(mpc_bits_reader * r, const unsigned
 static mpc_inline mpc_int32_t mpc_bits_huff_dec(mpc_bits_reader * r, const mpc_huffman *Table)
 {
 	mpc_uint16_t code;
-	code = ((r->buff[0] << 16) | (r->buff[1] << 8) | r->buff[2]) >> r->count;
+	code = (mpc_uint16_t)((((r->buff[0] << 16) | (r->buff[1] << 8) | r->buff[2]) >> r->count) & 0xFFFF);
 
 	while (code < Table->Code) Table++;
 
@@ -81,7 +81,7 @@ static mpc_inline mpc_int32_t mpc_bits_can_dec(mpc_bits_reader * r, const mpc_ca
 	mpc_uint16_t code;
 	mpc_huff_lut tmp;
 	const mpc_huffman * Table;
-	code = ((r->buff[0] << 16) | (r->buff[1] << 8) | r->buff[2]) >> r->count;
+	code = (mpc_uint16_t)((((r->buff[0] << 16) | (r->buff[1] << 8) | r->buff[2]) >> r->count) & 0xFFFF);
 
 	tmp = can->lut[code >> (16 - LUT_DEPTH)];
 	if (tmp.Length != 0) {
@@ -106,7 +106,7 @@ static mpc_inline mpc_int32_t mpc_bits_huff_lut(mpc_bits_reader * r, const mpc_l
 	mpc_uint16_t code;
 	mpc_huff_lut tmp;
 	const mpc_huffman * Table;
-	code = (mpc_uint16_t)(((r->buff[0] << 16) | (r->buff[1] << 8) | r->buff[2]) >> r->count);
+	code = (mpc_uint16_t)((((r->buff[0] << 16) | (r->buff[1] << 8) | r->buff[2]) >> r->count) & 0xFFFF);
 
 	tmp = lut->lut[code >> (16 - LUT_DEPTH)];
 	if (tmp.Length != 0) {

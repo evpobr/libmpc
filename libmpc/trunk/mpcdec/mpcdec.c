@@ -44,6 +44,17 @@
 #include <crtdbg.h>
 #endif
 
+#define MPCDEC_MAJOR 0
+#define MPCDEC_MINOR 9
+#define MPCDEC_BUILD 0
+
+#define _cat(a,b,c) #a"."#b"."#c
+#define cat(a,b,c) _cat(a,b,c)
+#define MPCDEC_VERSION cat(MPCDEC_MAJOR,MPCDEC_MINOR,MPCDEC_BUILD)
+
+const char    About []        = "mpcdec - musepack (mpc) decoder v" MPCDEC_VERSION " (C) 2006-2007 MDT\nBuilt " __DATE__ " " __TIME__ "\n";
+
+
 t_wav_uint32 mpc_wav_output_write(void* p_user_data, void const* p_buffer, t_wav_uint32 p_bytes)
 {
     FILE* p_handle = (FILE*) p_user_data;
@@ -104,7 +115,7 @@ main(int argc, char **argv)
     clock_t begin, end, sum; int total_samples; t_wav_output_file wav_output;
 	int c;
 
-    printf("mpcdec - musepack (mpc) decoder sample application\n");
+    printf(About);
 
 	while ((c = getopt(argc , argv, "ihc")) != -1) {
 		switch (c) {

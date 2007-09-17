@@ -41,6 +41,17 @@
 #include "../libmpcdec/huffman.h"
 #include "../libmpcdec/mpc_bits_reader.h"
 
+#define MPCGAIN_MAJOR 0
+#define MPCGAIN_MINOR 9
+#define MPCGAIN_BUILD 0
+
+#define _cat(a,b,c) #a"."#b"."#c
+#define cat(a,b,c) _cat(a,b,c)
+#define MPCGAIN_VERSION cat(MPCGAIN_MAJOR,MPCGAIN_MINOR,MPCGAIN_BUILD)
+
+const char    About []        = "mpcgain - musepack (mpc) replaygain calculator v" MPCGAIN_VERSION " (C) 2006-2007 MDT\nBuilt " __DATE__ " " __TIME__ "\n";
+
+
 static void usage(const char *exename)
 {
 	printf("Usage: %s <infile.mpc> [<infile2.mpc> <infile3.mpc> ... ]\n", exename);
@@ -55,6 +66,8 @@ int main(int argc, char **argv)
 	mpc_uint16_t * title_peak;
 	mpc_uint32_t * header_pos;
 	int j;
+
+	printf(About);
 
 	if(argc < 2) {
 		usage(argv[0]);

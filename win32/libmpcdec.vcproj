@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="libmpcdec"
 	ProjectGUID="{4C5362CD-0BF2-4B3B-971B-8293EB1A1DC3}"
 	RootNamespace="libmpcdec"
@@ -112,6 +112,7 @@
 				ExceptionHandling="0"
 				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"
+				FloatingPointModel="2"
 				WarningLevel="3"
 				CompileAs="1"
 			/>

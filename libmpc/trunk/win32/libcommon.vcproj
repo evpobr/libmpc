@@ -1,9 +1,10 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="libcommon"
 	ProjectGUID="{49A26D14-0AD0-497E-A982-42BFD4D992FC}"
+	RootNamespace="libcommon"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -108,6 +109,7 @@
 				ExceptionHandling="0"
 				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"
+				FloatingPointModel="2"
 				WarningLevel="3"
 				CompileAs="1"
 			/>

@@ -188,7 +188,7 @@ Ruhehoerschwelle ( PsyModel* m,
     }
 }
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 static double
 asinh ( double x )
 {

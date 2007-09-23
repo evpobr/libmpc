@@ -52,7 +52,7 @@
 #define cat(a,b,c) _cat(a,b,c)
 #define MPCDEC_VERSION cat(MPCDEC_MAJOR,MPCDEC_MINOR,MPCDEC_BUILD)
 
-const char    About []        = "mpcdec - musepack (mpc) decoder v" MPCDEC_VERSION " (C) 2006-2007 MDT\nBuilt " __DATE__ " " __TIME__ "\n";
+const char    About []        = "mpcdec - Musepack (MPC) decoder v" MPCDEC_VERSION " (C) 2006-2007 MDT\nBuilt " __DATE__ " " __TIME__ "\n";
 
 
 t_wav_uint32 mpc_wav_output_write(void* p_user_data, void const* p_buffer, t_wav_uint32 p_bytes)

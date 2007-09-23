@@ -49,7 +49,7 @@
 #define cat(a,b,c) _cat(a,b,c)
 #define MPCGAIN_VERSION cat(MPCGAIN_MAJOR,MPCGAIN_MINOR,MPCGAIN_BUILD)
 
-const char    About []        = "mpcgain - musepack (mpc) replaygain calculator v" MPCGAIN_VERSION " (C) 2006-2007 MDT\nBuilt " __DATE__ " " __TIME__ "\n";
+const char    About []        = "mpcgain - Musepack (MPC) ReplayGain calculator v" MPCGAIN_VERSION " (C) 2006-2007 MDT\nBuilt " __DATE__ " " __TIME__ "\n";
 
 
 static void usage(const char *exename)

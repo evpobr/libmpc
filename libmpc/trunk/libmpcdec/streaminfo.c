@@ -130,13 +130,13 @@ streaminfo_read_header_sv7(mpc_streaminfo* si, mpc_bits_reader * r)
 
 	// convert gain info
 	if (si->gain_title != 0) {
-		int tmp = OLD_GAIN_REF * 256 - ((int)(mpc_int16_t)si->gain_title * 256 + 50) / 100;
+		int tmp = (int)((OLD_GAIN_REF - (mpc_int16_t)si->gain_title / 100.) * 256. + .5);
 		if (tmp >= (1 << 16) || tmp < 0) tmp = 0;
 		si->gain_title = (mpc_int16_t) tmp;
 	}
 
 	if (si->gain_album != 0) {
-		int tmp = OLD_GAIN_REF * 256 - ((int)(mpc_int16_t)si->gain_album * 256 + 50) / 100;
+		int tmp = (int)((OLD_GAIN_REF - (mpc_int16_t)si->gain_album / 100.) * 256. + .5);
 		if (tmp >= (1 << 16) || tmp < 0) tmp = 0;
 		si->gain_album = (mpc_int16_t) tmp;
 	}

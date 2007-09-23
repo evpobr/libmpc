@@ -146,8 +146,6 @@ longhelp ( PsyModel * m )
              "\033[1m\rUsage:\033[0m\n"
              "  mpcenc [--options] <Input_File>\n"
              "  mpcenc [--options] <Input_File> <Output_File>\n"
-             "  mpcenc [--options] <List_of_Input_Files> <Output_File>        (not yet supp.)\n"
-             "  mpcenc [--options] <List_of_Input_Files> <Output_Directory>   (not yet supp.)\n"
              "\n" );
 
     stderr_printf (
@@ -177,7 +175,6 @@ longhelp ( PsyModel * m )
 
     stderr_printf (
              "\033[1m\rProfiles and Quality Scale:\033[0m\n"
-             "\n"
              "  Option of using a profile (--radio) or mapped quality scale (--quality 4.0).\n"
              "  In addition, quality scale is effective centesimally. (i.e. --quality 4.25)\n"
              "  Available options are as follows:\n"
@@ -187,7 +184,7 @@ longhelp ( PsyModel * m )
              "  --telephone      (--quality 2.00)   low quality           (~  60 kbps)\n"
              "  --thumb          (--quality 3.00)   low/medium quality    (~  90 kbps)\n"
              "  --radio          (--quality 4.00)   medium quality        (~ 130 kbps)\n"
-             "  --standard       (--quality 5.00)   high quality, (dflt)  (~ 180 kbps)\n"
+             "  --standard       (--quality 5.00)   high quality  (dflt)  (~ 180 kbps)\n"
              "   (or --normal)\n"
              "  --extreme        (--quality 6.00)   excellent quality     (~ 210 kbps)\n"
              "   (or --xtreme)\n"
@@ -253,6 +250,8 @@ longhelp ( PsyModel * m )
              "  --scale x        scale input signal by x (dflt: %7.5f)\n",              ScalingFactorl );
     stderr_printf (
              "  --scale x,y      scale input signal, separate for each channel\n" );
+	stderr_printf (
+             "\n" );
 
     stderr_printf (
              "\033[1m\rExpert settings:\033[0m\n" );
@@ -289,7 +288,7 @@ longhelp ( PsyModel * m )
     stderr_printf (
 			"  --tmpMask x      exploit postmasking: 0: off, 1: on (dflt: %i)\n",         m->tmpMask_used );
     stderr_printf (
-             "==Stuff settings==========\n" );
+             "==Other settings==========\n" );
     stderr_printf (
              "  --ms x           Mid/Side Stereo, 0: off, 1: reduced, 2: on, 3: decoupled,\n"
              "                   10: enhanced 1.5/3 dB, 11: 2/6 dB, 12: 2.5/9 dB,\n"
@@ -314,8 +313,7 @@ longhelp ( PsyModel * m )
              "  mpcenc --radio inputfile.wav outputfile.mpc\n"
              "  mpcenc --silent --radio --pns 0.25 inputfile.wav outputfile.mpc\n"
              "  mpcenc --nmt 12 --tmn 28 inputfile.wav outputfile.mpc\n"
-             "\n"
-             "For further information see the file 'MANUAL.TXT'.\n" );
+             "\n");
 }
 
 
@@ -340,17 +338,18 @@ shorthelp ( void )
              "\033[1m\rProfiles and Quality Scale:\033[0m\n"
              "  --thumb          (--quality 3.00)   low/medium quality    (~  90 kbps)\n"
              "  --radio          (--quality 4.00)   medium quality        (~ 130 kbps)\n"
-             "  --standard       (--quality 5.00)   high quality, (dflt)  (~ 180 kbps)\n"
+             "  --standard       (--quality 5.00)   high quality  (dflt)  (~ 180 kbps)\n"
              "  --extreme        (--quality 6.00)   excellent quality     (~ 210 kbps)\n"
+             "  --insane         (--quality 7.00)   excellent quality     (~ 240 kbps)\n"
              "\n"
 
              "\033[1m\rExamples:\033[0m\n"
              "  mpcenc inputfile.wav\n"
              "  mpcenc inputfile.wav outputfile.mpc\n"
-             "  mpcenc --extreme inputfile.wav outputfile.mpc\n"
+             "  mpcenc --insane inputfile.wav outputfile.mpc\n"
              "  mpcenc --silent --radio inputfile.wav outputfile.mpc\n"
              "\n"
-             "For further information see the file 'MANUAL.TXT' or use option --longhelp.\n" );
+             "For further information use the --longhelp option.\n" );
 }
 
 

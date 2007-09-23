@@ -41,6 +41,16 @@
 
 #define TMP_BUF_SIZE 128
 
+#define MPC2SV8_MAJOR 0
+#define MPC2SV8_MINOR 9
+#define MPC2SV8_BUILD 0
+
+#define _cat(a,b,c) #a"."#b"."#c
+#define cat(a,b,c) _cat(a,b,c)
+#define MPC2SV8_VERSION cat(MPC2SV8_MAJOR,MPC2SV8_MINOR,MPC2SV8_BUILD)
+
+const char    About []        = "mpc2sv8 - Musepack (MPC) sv7 to sv8 converter v" MPC2SV8_VERSION " (C) 2007 MDT\nBuilt " __DATE__ " " __TIME__ "\n";
+
 static void datacpy(mpc_decoder * d, mpc_encoder_t * e)
 {
 	static const int  offset[] = { 0, 1, 2, 3, 4, 7, 15, 31, 63, 127, 255, 511,
@@ -88,7 +98,7 @@ main(int argc, char **argv)
 	FILE * in_file;
 	char buf[TMP_BUF_SIZE];
 
-    printf("mpc2sv8 - musepack (mpc) sv7 to sv8 converter\n");
+    printf(About);
     if(3 != argc) {
         usage(argv[0]);
         return 0;

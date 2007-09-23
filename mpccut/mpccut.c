@@ -45,6 +45,16 @@
 #define atoll _atoi64
 #endif
 
+#define MPCCUT_MAJOR 0
+#define MPCCUT_MINOR 9
+#define MPCCUT_BUILD 0
+
+#define _cat(a,b,c) #a"."#b"."#c
+#define cat(a,b,c) _cat(a,b,c)
+#define MPCCUT_VERSION cat(MPCCUT_MAJOR,MPCCUT_MINOR,MPCCUT_BUILD)
+
+const char    About []        = "mpccut - Musepack (MPC) stream cutter v" MPCCUT_VERSION " (C) 2007 MDT\nBuilt " __DATE__ " " __TIME__ "\n";
+
 static void copy_data(FILE * in_file, int in_file_pos, FILE * out_file, int data_size)
 {
 	char * buff[512];
@@ -80,7 +90,7 @@ int main(int argc, char **argv)
 	int c;
 	FILE * in_file;
 
-	printf("mpccut - musepack (mpc) stream cutter\n");
+	printf(About);
 
 	while ((c = getopt(argc , argv, "s:e:")) != -1) {
 		switch (c) {

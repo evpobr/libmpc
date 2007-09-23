@@ -226,10 +226,11 @@ CEP_Analyse2048 ( PsyModel* m,
 static mpc_inline float   /* This is a rough estimation with an accuracy of |x|<0.0037 */
 logfast ( float x )
 {
-    double  y = x * x;
-    y *= y;
-    y *= y;
-    return (((int*)(&y))[1] + (45127.5 - 1072693248.)) * ( M_LN2 / (1L<<23) );
+	mpc_doubleint y;
+	y.d = x * x;
+    y.d *= y.d;
+    y.d *= y.d;
+	return (y.n[1] + (45127.5 - 1072693248.)) * ( M_LN2 / (1L<<23) );
 }
 
 #endif

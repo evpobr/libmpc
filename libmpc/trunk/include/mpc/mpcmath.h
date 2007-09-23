@@ -24,6 +24,12 @@ typedef union mpc_floatint
 	mpc_int32_t n;
 } mpc_floatint;
 
+typedef union mpc_doubleint
+{
+	double   d;
+	mpc_int32_t n[2];
+} mpc_doubleint;
+
 static mpc_inline mpc_int32_t mpc_lrintf(float fVal)
 {
 	mpc_floatint tmp;

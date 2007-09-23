@@ -126,26 +126,26 @@ streaminfo_read_header_sv7(mpc_streaminfo* si, mpc_bits_reader * r)
 	si->block_pwr          = 0;
 
 // This is the gain reference used in old replaygain
-#define OLD_GAIN_REF 65.
+#define OLD_GAIN_REF 64.82
 
 	// convert gain info
 	if (si->gain_title != 0) {
-		int tmp = (int)((OLD_GAIN_REF - (mpc_int16_t)si->gain_title / 100.) * 256);
+		int tmp = OLD_GAIN_REF * 256 - ((int)(mpc_int16_t)si->gain_title * 256 + 50) / 100;
 		if (tmp >= (1 << 16) || tmp < 0) tmp = 0;
 		si->gain_title = (mpc_int16_t) tmp;
 	}
 
 	if (si->gain_album != 0) {
-		int tmp = (int)((OLD_GAIN_REF - (mpc_int16_t)si->gain_album / 100.) * 256);
+		int tmp = OLD_GAIN_REF * 256 - ((int)(mpc_int16_t)si->gain_album * 256 + 50) / 100;
 		if (tmp >= (1 << 16) || tmp < 0) tmp = 0;
 		si->gain_album = (mpc_int16_t) tmp;
 	}
 
 	if (si->peak_title != 0)
- 		si->peak_title = (mpc_uint16_t) (log10(si->peak_title) * 20 * 256);
+ 		si->peak_title = (mpc_uint16_t) (log10(si->peak_title) * 20 * 256 + .5);
 
 	if (si->peak_album != 0)
-		si->peak_album = (mpc_uint16_t) (log10(si->peak_album) * 20 * 256);
+		si->peak_album = (mpc_uint16_t) (log10(si->peak_album) * 20 * 256 + .5);
 
 	mpc_get_encoder_string(si);
 

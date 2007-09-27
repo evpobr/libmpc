@@ -125,7 +125,6 @@ mpc_demux_seek(mpc_demux * d, mpc_size_t fpos, mpc_uint32_t min_bytes) {
 	if (d->si.stream_version == 7)
 		next_pos &= (-1 << 2);
 	bit_offset = (int) (fpos - (next_pos << 3));
-	next_pos += d->si.header_position; // add id3 offset
 
 	d->r->seek(d->r, (mpc_int32_t) next_pos);
 	mpc_demux_clear_buff(d);

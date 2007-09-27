@@ -46,7 +46,7 @@
 
 #define MPCDEC_MAJOR 0
 #define MPCDEC_MINOR 9
-#define MPCDEC_BUILD 0
+#define MPCDEC_BUILD 1
 
 #define _cat(a,b,c) #a"."#b"."#c
 #define cat(a,b,c) _cat(a,b,c)
@@ -73,34 +73,36 @@ static void print_info(mpc_streaminfo * info, char * filename)
 	int minutes = time / 60;
 	int seconds = time % 60;
 
-	printf("file: %s\n", filename);
-	printf("stream version %d\n", info->stream_version);
-	printf("encoder: %s\n", info->encoder);
-	printf("profile: %s (q=%0.2f)\n", info->profile_name, info->profile - 5);
-	printf("PNS: %s\n", info->pns == 0xFF ? "unknow" : info->pns ? "on" : "off");
-	printf("mid/side stereo: %s\n", info->ms ? "on" : "off");
-	printf("gapless: %s\n", info->is_true_gapless ? "on" : "off");
-	printf("average bitrate: %6.1f kbps\n", info->average_bitrate * 1.e-3);
-	printf("samplerate: %d Hz\n", info->sample_freq);
-	printf("channels: %d\n", info->channels);
-	printf("length: %d:%.2d (%u samples)\n", minutes, seconds, (mpc_uint32_t)mpc_streaminfo_get_length_samples(info));
-	printf("file size: %d Bytes\n", info->total_file_length);
-	printf("track peak: %2.2f dB\n", info->peak_title / 256.f);
-	printf("track gain: %2.2f dB / %2.2f dB\n", info->gain_title / 256.f, info->gain_title == 0 ? 0 : 64.82f - info->gain_title / 256.f);
-	printf("album peak: %2.2f dB\n", info->peak_album / 256.f);
-	printf("album gain: %2.2f dB / %2.2f dB\n", info->gain_album / 256.f, info->gain_album == 0 ? 0 : 64.82f - info->gain_album / 256.f);
-	printf("\n");
+	fprintf(stderr, "file: %s\n", filename);
+	fprintf(stderr, "stream version %d\n", info->stream_version);
+	fprintf(stderr, "encoder: %s\n", info->encoder);
+	fprintf(stderr, "profile: %s (q=%0.2f)\n", info->profile_name, info->profile - 5);
+	fprintf(stderr, "PNS: %s\n", info->pns == 0xFF ? "unknow" : info->pns ? "on" : "off");
+	fprintf(stderr, "mid/side stereo: %s\n", info->ms ? "on" : "off");
+	fprintf(stderr, "gapless: %s\n", info->is_true_gapless ? "on" : "off");
+	fprintf(stderr, "average bitrate: %6.1f kbps\n", info->average_bitrate * 1.e-3);
+	fprintf(stderr, "samplerate: %d Hz\n", info->sample_freq);
+	fprintf(stderr, "channels: %d\n", info->channels);
+	fprintf(stderr, "length: %d:%.2d (%u samples)\n", minutes, seconds, (mpc_uint32_t)mpc_streaminfo_get_length_samples(info));
+	fprintf(stderr, "file size: %d Bytes\n", info->total_file_length);
+	fprintf(stderr, "track peak: %2.2f dB\n", info->peak_title / 256.f);
+	fprintf(stderr, "track gain: %2.2f dB / %2.2f dB\n", info->gain_title / 256.f, info->gain_title == 0 ? 0 : 64.82f - info->gain_title / 256.f);
+	fprintf(stderr, "album peak: %2.2f dB\n", info->peak_album / 256.f);
+	fprintf(stderr, "album gain: %2.2f dB / %2.2f dB\n", info->gain_album / 256.f, info->gain_album == 0 ? 0 : 64.82f - info->gain_album / 256.f);
+	fprintf(stderr, "\n");
 
 }
 
 static void
 usage(const char *exename)
 {
-    printf("Usage: %s [-i] [-h] <infile.mpc> [<outfile.wav>]\n"
+    fprintf(stderr, "Usage: %s [-i] [-h] <infile.mpc> [<outfile.wav>]\n"
 			"-i : print file information on stdout\n"
 			"-c : check the file for stream errors\n"
 			"     (doesn't fully decode, outfile will be ignored)\n"
-			"-h : print this help\n", exename);
+			"-h : print this help\n"
+            "you can use stdin and stdout as resp. <infile.mpc> and\n"
+            "<outfile.wav> replacing the file name by \"-\"\n", exename);
 }
 
 int
@@ -115,7 +117,7 @@ main(int argc, char **argv)
     clock_t begin, end, sum; int total_samples; t_wav_output_file wav_output;
 	int c;
 
-    printf(About);
+    fprintf(stderr, About);
 
 	while ((c = getopt(argc , argv, "ihc")) != -1) {
 		switch (c) {
@@ -137,7 +139,10 @@ main(int argc, char **argv)
         return 0;
     }
 
-	err = mpc_reader_init_stdio(&reader, argv[optind]);
+	if (strcmp(argv[optind], "-") == 0)
+		err = mpc_reader_init_stdio_stream(& reader, stdin);
+	else
+		err = mpc_reader_init_stdio(&reader, argv[optind]);
     if(err < 0) return !MPC_STATUS_OK;
 
     demux = mpc_demux_init(&reader);
@@ -159,7 +164,10 @@ main(int argc, char **argv)
         memset(&wav_output, 0, sizeof wav_output);
         wavo_fc.m_seek      = mpc_wav_output_seek;
         wavo_fc.m_write     = mpc_wav_output_write;
-		wavo_fc.m_user_data = fopen(argv[optind + 1], "wb");
+	    if (strcmp(argv[optind + 1], "-") == 0)
+		    wavo_fc.m_user_data = stdout;
+	    else
+			wavo_fc.m_user_data = fopen(argv[optind + 1], "wb");
         if(!wavo_fc.m_user_data) return !MPC_STATUS_OK;
         err = waveformat_output_open(&wav_output, wavo_fc, si.channels, 16, 0, si.sample_freq, (t_wav_uint32) si.samples * 2);
         if(!err) return !MPC_STATUS_OK;
@@ -200,15 +208,15 @@ main(int argc, char **argv)
     }
 
 	if (err != MPC_STATUS_OK)
-		printf("An error occured while decoding\n");
+		fprintf(stderr, "An error occured while decoding\n");
 	else if (check)
-		printf("No error found\n");
+		fprintf(stderr, "No error found\n");
 
 	if (!check) {
-		printf("%u samples ", total_samples);
+		fprintf(stderr, "%u samples ", total_samples);
 		if (sum <= 0) sum = 1;
 		total_samples = (mpc_uint32_t) ((mpc_uint64_t) total_samples * CLOCKS_PER_SEC * 100 / ((mpc_uint64_t)si.sample_freq * sum));
-		printf("decoded in %u ms (%u.%02ux)\n",
+		fprintf(stderr, "decoded in %u ms (%u.%02ux)\n",
 			(unsigned int) (sum * 1000 / CLOCKS_PER_SEC),
 			total_samples / 100,
 			total_samples % 100

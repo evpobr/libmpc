@@ -34,6 +34,11 @@
 #include <stdio.h>
 #include <mpc/mpcdec.h>
 #include <mpc/minimax.h>
+#include <getopt.h>
+
+#include <sys/types.h>
+#include <dirent.h>
+#include <libgen.h>
 
 #include "../libmpcdec/decoder.h"
 #include "../libmpcdec/internal.h"
@@ -43,7 +48,7 @@
 
 #define MPC2SV8_MAJOR 0
 #define MPC2SV8_MINOR 9
-#define MPC2SV8_BUILD 0
+#define MPC2SV8_BUILD 1
 
 #define _cat(a,b,c) #a"."#b"."#c
 #define cat(a,b,c) _cat(a,b,c)
@@ -81,13 +86,15 @@ static void datacpy(mpc_decoder * d, mpc_encoder_t * e)
 static void
 usage(const char *exename)
 {
-    printf("Usage: %s <infile.mpc> <outfile.mpc>\n", exename);
+	printf("Usage:\n"
+	       "%s <infile.mpc> <outfile.mpc>\n"
+	       "or\n"
+	       "%s <infile_1.mpc> [ <infile_2.mpc> ... <infile_n.mpc> ] <outdir>\n", exename, exename);
 }
 
-int
-main(int argc, char **argv)
+int convert(char * sv7file, char * sv8file)
 {
-    mpc_reader reader;
+	mpc_reader reader;
 	mpc_demux* demux;
 	mpc_streaminfo si;
 	mpc_status err;
@@ -98,42 +105,39 @@ main(int argc, char **argv)
 	FILE * in_file;
 	char buf[TMP_BUF_SIZE];
 
-    printf(About);
-    if(3 != argc) {
-        usage(argv[0]);
-        return 0;
-    }
+	err = mpc_reader_init_stdio(&reader, sv7file);
+	if(err < 0) return err;
 
-    err = mpc_reader_init_stdio(&reader, argv[1]);
-    if(err < 0) return !MPC_STATUS_OK;
-
-    demux = mpc_demux_init(&reader);
-    if(!demux) return !MPC_STATUS_OK;
-    mpc_demux_get_info(demux,  &si);
+	demux = mpc_demux_init(&reader);
+	if(!demux) {
+		err = !MPC_STATUS_OK;
+		goto READER_ERR;
+	}
+	mpc_demux_get_info(demux,  &si);
 
 	if (si.stream_version >= 8) {
-		fprintf(stderr, "Error : the file \"%s\" is already a sv8 file\n", argv[1]);
-		exit(MPC_STATUS_INVALIDSV);
+		fprintf(stderr, "Error : the file \"%s\" is already a sv8 file\n", sv7file);
+		err = !MPC_STATUS_OK;
+		goto DEMUX_ERR;
 	}
 
 	mpc_encoder_init(&e, si.samples, 6, 1);
-	e.outputFile = fopen( argv[2], "rb" );
-	if ( e.outputFile != 0 ) {
-		fprintf(stderr, "Error : output file \"%s\" already exists\n", argv[2]);
-		exit(MPC_STATUS_FILE);
-	}
-	e.outputFile = fopen( argv[2], "w+b" );
+	e.outputFile = fopen( sv8file, "w+b" );
 	e.MS_Channelmode = si.ms;
 
 	// copy begining of file
-	in_file = fopen(argv[1], "rb");
-	if(in_file == 0) return !MPC_STATUS_OK;
+	in_file = fopen(sv7file, "rb");
+	if(in_file == 0) {
+		err = !MPC_STATUS_OK;
+		goto OUT_FILE_ERR;
+	}
 	r_size = si.header_position;
 	while(r_size) {
 		size_t tmp_size = fread(buf, 1, mini(TMP_BUF_SIZE, r_size), in_file);
 		if (fwrite(buf, 1, tmp_size, e.outputFile) != tmp_size) {
-			fprintf(stderr, "Error writing to target file : \"%s\"\n", argv[2]);
-			exit(MPC_STATUS_FILE);
+			fprintf(stderr, "Error writing to target file : \"%s\"\n", sv8file);
+			err = MPC_STATUS_FILE;
+			goto IN_FILE_ERR;
 		}
 		r_size -= tmp_size;
 	}
@@ -142,12 +146,12 @@ main(int argc, char **argv)
 	e.seek_ref = ftell(e.outputFile);
 	writeMagic(&e);
 	writeStreamInfo( &e, si.max_band, si.ms > 0, si.samples, 0, si.sample_freq,
-					  si.channels);
+	                 si.channels);
 	si_size = writeBlock(&e, "SH", MPC_TRUE, 0);
 	writeGainInfo(&e, si.gain_title, si.peak_title, si.gain_album, si.peak_album);
 	si_size = writeBlock(&e, "RG", MPC_FALSE, 0);
 	writeEncoderInfo(&e, si.profile, si.pns, si.encoder_version / 100,
-					  si.encoder_version % 100, 0);
+	                 si.encoder_version % 100, 0);
 	writeBlock(&e, "EI", MPC_FALSE, 0);
 	e.seek_ptr = ftell(e.outputFile);
 	writeBits (&e, 0, 16);
@@ -184,7 +188,7 @@ main(int argc, char **argv)
 	if (demux->d->samples != si.samples) {
 		fseek(e.outputFile, e.seek_ref + 4, SEEK_SET);
 		writeStreamInfo( &e, si.max_band, si.ms > 0, demux->d->samples, 0,
-						  si.sample_freq, si.channels);
+		                 si.sample_freq, si.channels);
 		writeBlock(&e, "SH", MPC_TRUE, si_size);
 		fseek(e.outputFile, 0, SEEK_END);
 	}
@@ -200,11 +204,76 @@ main(int argc, char **argv)
 		}
 	}
 
-	fclose ( e.outputFile );
+IN_FILE_ERR:
 	fclose ( in_file );
-	mpc_demux_exit(demux);
-	mpc_reader_exit_stdio(&reader);
+OUT_FILE_ERR:
+	fclose ( e.outputFile );
 	mpc_encoder_exit(&e);
+DEMUX_ERR:
+	mpc_demux_exit(demux);
+READER_ERR:
+	mpc_reader_exit_stdio(&reader);
 
 	return err;
+}
+
+mpc_bool_t is_dir(char * dir_path)
+{
+	DIR * out_dir = opendir(dir_path);
+	if (out_dir != 0) {
+		closedir(out_dir);
+		return MPC_TRUE;
+	}
+	return MPC_FALSE;
+}
+
+int
+main(int argc, char **argv)
+{
+	int c, i;
+	mpc_bool_t overwrite = MPC_FALSE, use_dir = MPC_FALSE;
+	printf(About);
+	int ret = MPC_STATUS_OK;
+
+	while ((c = getopt(argc , argv, "oh")) != -1) {
+		switch (c) {
+		case 'o':
+			overwrite = MPC_TRUE;
+			break;
+		case 'h':
+			usage(argv[0]);
+			return 0;
+		}
+	}
+
+	use_dir = is_dir(argv[argc - 1]);
+
+	if((argc - optind) < 2 || (use_dir == MPC_FALSE && (argc - optind) > 2)) {
+		usage(argv[0]);
+		return 0;
+	}
+
+	for (i = optind; i < argc - 1; i++) {
+		char * in_file = argv[i];
+		char * out_file = argv[argc - 1];
+		if (use_dir == MPC_TRUE) {
+			char * file_name = basename(in_file);
+			out_file = malloc(strlen(file_name) + strlen(argv[argc - 1]) + 2);
+			sprintf(out_file, "%s/%s", argv[argc - 1], file_name);
+		}
+		if (overwrite == MPC_FALSE) {
+			FILE * test_file = fopen( out_file, "rb" );
+			if ( test_file != 0 ) {
+				fprintf(stderr, "Error : output file \"%s\" already exists\n", out_file);
+				fclose(test_file);
+				continue;
+			}
+		}
+		// FIXME : test if in and out files are the same
+		ret = convert(in_file, out_file);
+		if (use_dir == MPC_TRUE)
+			free(out_file);
+	}
+
+	return ret;
 }

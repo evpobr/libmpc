@@ -123,7 +123,7 @@ mpc_demux_seek(mpc_demux * d, mpc_size_t fpos, mpc_uint32_t min_bytes) {
 
 	next_pos = fpos >> 3;
 	if (d->si.stream_version == 7)
-		next_pos &= (-1 << 2);
+		next_pos = ((next_pos - d->si.header_position) & (-1 << 2)) + d->si.header_position;
 	bit_offset = (int) (fpos - (next_pos << 3));
 
 	d->r->seek(d->r, (mpc_int32_t) next_pos);
@@ -339,7 +339,6 @@ mpc_demux * mpc_demux_init(mpc_reader * p_reader)
 		memset(p_tmp, 0, sizeof(mpc_demux));
 		p_tmp->r = p_reader;
 		mpc_demux_clear_buff(p_tmp);
-		p_tmp->seek_table = 0;
 		if (mpc_demux_header(p_tmp) == MPC_STATUS_OK &&
 				  mpc_demux_seek_init(p_tmp) == MPC_STATUS_OK) {
 			p_tmp->d = mpc_decoder_init(&p_tmp->si);

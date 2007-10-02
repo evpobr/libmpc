@@ -42,7 +42,7 @@
 
 /* C O N S T A N T S */
 // Bits per sample for chosen quantizer
-const mpc_uint32_t  Res_bit [18] = {
+const mpc_uint8_t  Res_bit [18] = {
     0,  0,  0,  0,  0,  0,  0,  0,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16
 };
 
@@ -64,7 +64,7 @@ const MPC_SAMPLE_FORMAT  __Cc [1 + 18] = {
 
 // Requantization offset
 // 2*D+1 = steps of quantizer
-const mpc_int32_t  __Dc [1 + 18] = {
+const mpc_int16_t  __Dc [1 + 18] = {
       2,
       0,     1,     2,     3,     4,     7,    15,    31,    63,
     127,   255,   511,  1023,  2047,  4095,  8191, 16383, 32767

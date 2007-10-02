@@ -242,7 +242,7 @@ ISNR_Schaetzer_Trans ( const float* input, const float SNRcomp, const int res )
 
 // Linear quantizer for a subband
 void
-QuantizeSubband ( unsigned int* qu_output, const float* input, const int res, float* errors, const int maxNsOrder )
+QuantizeSubband ( mpc_int16_t* qu_output, const float* input, const int res, float* errors, const int maxNsOrder )
 {
 	int    n, quant;
     int    offset  = D [res];
@@ -280,7 +280,7 @@ QuantizeSubband ( unsigned int* qu_output, const float* input, const int res, fl
 
 // NoiseShaper for a subband
 void
-QuantizeSubbandWithNoiseShaping ( unsigned int* qu_output, const float* input, const int res, float* errors, const float* FIR )
+QuantizeSubbandWithNoiseShaping ( mpc_int16_t* qu_output, const float* input, const int res, float* errors, const float* FIR )
 {
     float  signal;
     float  mult    = A [res];

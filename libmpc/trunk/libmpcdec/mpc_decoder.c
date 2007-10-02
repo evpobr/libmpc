@@ -204,8 +204,8 @@ mpc_decoder_requantisierung(mpc_decoder *d)
     MPC_SAMPLE_FORMAT tempr;
     MPC_SAMPLE_FORMAT* YL;
     MPC_SAMPLE_FORMAT* YR;
-    mpc_int32_t*    L;
-    mpc_int32_t*    R;
+    mpc_int16_t*    L;
+    mpc_int16_t*    R;
 	const mpc_int32_t Last_Band = d->max_band;
 
 #ifdef MPC_FIXED_POINT
@@ -452,7 +452,7 @@ void mpc_decoder_read_bitstream_sv7(mpc_decoder * d, mpc_bits_reader * r)
 
     /***************************** Samples ****************************/
     for ( n = 0; n < Max_used_Band; n++ ) {
-		mpc_int32_t *q = d->Q[n].L, Res = d->Res_L[n];
+		mpc_int16_t *q = d->Q[n].L, Res = d->Res_L[n];
 		do {
 			mpc_int32_t k;
 			const mpc_lut_data *Table;
@@ -614,7 +614,7 @@ void mpc_decoder_read_bitstream_sv8(mpc_decoder * d, mpc_bits_reader * r, mpc_bo
 
 	/***************************** Samples ****************************/
 	for ( n = 0; n < Max_used_Band; n++ ) {
-		mpc_int32_t *q = d->Q[n].L, Res = d->Res_L[n];
+		mpc_int16_t *q = d->Q[n].L, Res = d->Res_L[n];
 		static const unsigned int thres[] = {0, 0, 3, 0, 0, 1, 3, 4, 8};
 		static const mpc_int8_t HuffQ2_var[5*5*5] =
 		{6, 5, 4, 5, 6, 5, 4, 3, 4, 5, 4, 3, 2, 3, 4, 5, 4, 3, 4, 5, 6, 5, 4, 5, 6, 5, 4, 3, 4, 5, 4, 3, 2, 3, 4, 3, 2, 1, 2, 3, 4, 3, 2, 3, 4, 5, 4, 3, 4, 5, 4, 3, 2, 3, 4, 3, 2, 1, 2, 3, 2, 1, 0, 1, 2, 3, 2, 1, 2, 3, 4, 3, 2, 3, 4, 5, 4, 3, 4, 5, 4, 3, 2, 3, 4, 3, 2, 1, 2, 3, 4, 3, 2, 3, 4, 5, 4, 3, 4, 5, 6, 5, 4, 5, 6, 5, 4, 3, 4, 5, 4, 3, 2, 3, 4, 5, 4, 3, 4, 5, 6, 5, 4, 5, 6};

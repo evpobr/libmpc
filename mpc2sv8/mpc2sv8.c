@@ -69,7 +69,7 @@ static void datacpy(mpc_decoder * d, mpc_encoder_t * e)
 	memcpy(e->MS_Flag, d->MS_Flag, sizeof(e->MS_Flag));
 
 	for( i = 0; i <= d->max_band; i++){
-		mpc_int32_t * q_d = d->Q[i].L, * q_e = e->Q[i].L, Res = d->Res_L[i];
+		mpc_int16_t * q_d = d->Q[i].L, * q_e = e->Q[i].L, Res = d->Res_L[i];
 
 		if (Res > 0)
 			for( j = 0; j < 36; j++)

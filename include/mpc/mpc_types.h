@@ -76,8 +76,8 @@ typedef mpc_uint8_t mpc_bool_t;
 # define mpc_int64_max 9223372036854775807ll
 
 typedef struct mpc_quantizer {
-	mpc_int32_t  L [36];
-	mpc_int32_t  R [36];
+	mpc_int16_t  L [36];
+	mpc_int16_t  R [36];
 } mpc_quantizer;
 
 /// Libmpcdec error codes

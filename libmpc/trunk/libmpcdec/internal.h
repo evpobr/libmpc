@@ -61,7 +61,7 @@ struct mpc_bits_reader_t {
 	unsigned char * buff; /// pointer on current byte
 	unsigned int count; /// unread bits in current byte
 };
-	
+
 #define MAX_FRAME_SIZE 4352
 #define DEMUX_BUFFER_SIZE (65536 - MAX_FRAME_SIZE) // need some space as sand box
 
@@ -86,7 +86,7 @@ struct mpc_demux_t {
 /// helper functions used by multiple files
 mpc_uint32_t mpc_random_int(mpc_decoder *d); // in synth_filter.c
 void mpc_decoder_init_quant(mpc_decoder *d, double scale_factor);
-void mpc_decoder_synthese_filter_float(mpc_decoder *d, MPC_SAMPLE_FORMAT* OutData);
+void mpc_decoder_synthese_filter_float(mpc_decoder *d, MPC_SAMPLE_FORMAT* OutData, mpc_int_t channels);
 
 #ifdef __cplusplus
 }

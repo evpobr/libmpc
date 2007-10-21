@@ -162,7 +162,7 @@ void mpc_decoder_decode_frame(mpc_decoder * d,
 
 	if (d->samples_to_skip < MPC_FRAME_LENGTH + MPC_DECODER_SYNTH_DELAY) {
 		mpc_decoder_requantisierung(d);
-		mpc_decoder_synthese_filter_float(d, i->buffer);
+		mpc_decoder_synthese_filter_float(d, i->buffer, d->channels);
 	}
 
 	d->decoded_samples += MPC_FRAME_LENGTH;

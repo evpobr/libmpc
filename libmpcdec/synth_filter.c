@@ -329,7 +329,7 @@ mpc_compute_new_V(const MPC_SAMPLE_FORMAT* p_sample, MPC_SAMPLE_FORMAT* pV)
 }
 
 static void
-mpc_synthese_filter_float_internal(MPC_SAMPLE_FORMAT* p_out, MPC_SAMPLE_FORMAT* pV, const MPC_SAMPLE_FORMAT* pY)
+mpc_synthese_filter_float_internal(MPC_SAMPLE_FORMAT* p_out, MPC_SAMPLE_FORMAT* pV, const MPC_SAMPLE_FORMAT* pY, mpc_int_t channels)
 {
     mpc_uint32_t n;
     for ( n = 0; n < 36; n++, pY += 32 )
@@ -347,23 +347,25 @@ mpc_synthese_filter_float_internal(MPC_SAMPLE_FORMAT* p_out, MPC_SAMPLE_FORMAT* 
                    + MPC_MULTIPLY_FRACT(pV[512], pD[ 8]) + MPC_MULTIPLY_FRACT(pV[608], pD[ 9]) + MPC_MULTIPLY_FRACT(pV[640], pD[10]) + MPC_MULTIPLY_FRACT(pV[736], pD[11])
                    + MPC_MULTIPLY_FRACT(pV[768], pD[12]) + MPC_MULTIPLY_FRACT(pV[864], pD[13]) + MPC_MULTIPLY_FRACT(pV[896], pD[14]) + MPC_MULTIPLY_FRACT(pV[992], pD[15])
                    , 2);
-            pData += 2;
+            pData += channels;
         }
         pV    -= 32; //bleh
-        p_out += 64;
+        p_out += 32 * channels;
     }
 }
 
 void
-mpc_decoder_synthese_filter_float(mpc_decoder* p_dec, MPC_SAMPLE_FORMAT* p_out)
+mpc_decoder_synthese_filter_float(mpc_decoder* p_dec, MPC_SAMPLE_FORMAT* p_out, mpc_int_t channels)
 {
     /********* left channel ********/
     memmove(&p_dec->V_L[MPC_V_MEM], p_dec->V_L, 960 * sizeof *p_dec->V_L);
-    mpc_synthese_filter_float_internal(p_out, &p_dec->V_L[MPC_V_MEM], p_dec->Y_L[0]);
+	mpc_synthese_filter_float_internal(p_out, &p_dec->V_L[MPC_V_MEM], p_dec->Y_L[0], channels);
 
     /******** right channel ********/
-    memmove(&p_dec->V_R[MPC_V_MEM], p_dec->V_R, 960 * sizeof *p_dec->V_R);
-    mpc_synthese_filter_float_internal(p_out + 1, &p_dec->V_R[MPC_V_MEM], p_dec->Y_R[0]);
+	if (channels > 1) {
+		memmove(&p_dec->V_R[MPC_V_MEM], p_dec->V_R, 960 * sizeof *p_dec->V_R);
+		mpc_synthese_filter_float_internal(p_out + 1, &p_dec->V_R[MPC_V_MEM], p_dec->Y_R[0], channels);
+	}
 }
 
 /*******************************************/

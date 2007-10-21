@@ -46,7 +46,7 @@
 
 #define MPCDEC_MAJOR 0
 #define MPCDEC_MINOR 9
-#define MPCDEC_BUILD 1
+#define MPCDEC_BUILD 2
 
 #define _cat(a,b,c) #a"."#b"."#c
 #define cat(a,b,c) _cat(a,b,c)
@@ -169,7 +169,7 @@ main(int argc, char **argv)
 	    else
 			wavo_fc.m_user_data = fopen(argv[optind + 1], "wb");
         if(!wavo_fc.m_user_data) return !MPC_STATUS_OK;
-        err = waveformat_output_open(&wav_output, wavo_fc, si.channels, 16, 0, si.sample_freq, (t_wav_uint32) si.samples * 2);
+        err = waveformat_output_open(&wav_output, wavo_fc, si.channels, 16, 0, si.sample_freq, (t_wav_uint32) si.samples * si.channels);
         if(!err) return !MPC_STATUS_OK;
     }
 
@@ -199,9 +199,9 @@ main(int argc, char **argv)
 				if (tmp < -(1 << 15)) tmp = -(1 << 15);
 				tmp_buff[i] = tmp;
 			}
-			if(waveformat_output_process_int16(&wav_output, tmp_buff, frame.samples*2) < 0)
+			if(waveformat_output_process_int16(&wav_output, tmp_buff, frame.samples * si.channels) < 0)
 #else
-            if(waveformat_output_process_float32(&wav_output, sample_buffer, frame.samples*2) < 0)
+			if(waveformat_output_process_float32(&wav_output, sample_buffer, frame.samples * si.channels) < 0)
 #endif
                 break;
 		}

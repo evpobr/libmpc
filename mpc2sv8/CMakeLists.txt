@@ -5,6 +5,11 @@ link_directories(${libmpc_BINARY_DIR}/libmpcdec)
 include_directories(${libmpc_SOURCE_DIR}/libmpcenc)
 link_directories(${libmpc_BINARY_DIR}/libmpcenc)
 
+if(MSVC)
+include_directories(${libmpc_SOURCE_DIR}/win32)
+add_executable(mpc2sv8 mpc2sv8.c ${libmpc_SOURCE_DIR}/win32/attgetopt ${libmpc_SOURCE_DIR}/win32/basename ${libmpc_SOURCE_DIR}/win32/dirent)
+endif(MSVC)
+
 add_executable(mpc2sv8 mpc2sv8.c)
 
 target_link_libraries(mpc2sv8 mpcdec_static)

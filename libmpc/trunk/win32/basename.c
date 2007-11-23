@@ -47,14 +47,16 @@ __cdecl char *basename( char *path )
     /* allocate sufficient local storage space,
      * in which to create a wide character reference copy of path
      */
-
-    wchar_t refcopy[1 + (len = mbstowcs( NULL, path, 0 ))];
+	  
+    wchar_t * refcopy, * refpath;
+    len = mbstowcs( NULL, path, 0 );
+    refcopy = malloc((1 + len) * sizeof(wchar_t));
 
     /* create the wide character reference copy of path,
      * and step over the drive designator, if present ...
      */
 
-    wchar_t *refpath = refcopy;
+    refpath = refcopy;
     if( ((len = mbstowcs( refpath, path, len )) > 1) && (refpath[1] == L':') )
     {
       /* FIXME: maybe should confirm *refpath is a valid drive designator */
@@ -141,6 +143,7 @@ __cdecl char *basename( char *path )
       return( path );
     }
 
+    free(refcopy);
     /* or we had an empty residual path name, after the drive designator,
      * in which case we simply fall through ...
      */

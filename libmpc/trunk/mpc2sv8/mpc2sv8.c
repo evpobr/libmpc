@@ -232,8 +232,8 @@ main(int argc, char **argv)
 {
 	int c, i;
 	mpc_bool_t overwrite = MPC_FALSE, use_dir = MPC_FALSE;
-	printf(About);
 	int ret = MPC_STATUS_OK;
+	printf(About);
 
 	while ((c = getopt(argc , argv, "oh")) != -1) {
 		switch (c) {

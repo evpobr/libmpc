@@ -51,8 +51,6 @@
 
 #include <dirent.h>
 
-#include <unixem/unixem.h>
-
 #include <errno.h>
 #include <stdlib.h>
 #include <windows.h>

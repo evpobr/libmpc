@@ -44,6 +44,14 @@
 #include <crtdbg.h>
 #endif
 
+#ifdef WIN32
+# include <fcntl.h>
+# include <io.h>
+# define SET_BINARY_MODE(file) setmode(fileno(file), O_BINARY)
+#else
+# define SET_BINARY_MODE(file)
+#endif 
+
 #define MPCDEC_MAJOR 0
 #define MPCDEC_MINOR 9
 #define MPCDEC_BUILD 2
@@ -139,9 +147,10 @@ main(int argc, char **argv)
         return 0;
     }
 
-	if (strcmp(argv[optind], "-") == 0)
+	if (strcmp(argv[optind], "-") == 0) {
+		SET_BINARY_MODE(stdin);
 		err = mpc_reader_init_stdio_stream(& reader, stdin);
-	else
+	} else
 		err = mpc_reader_init_stdio(&reader, argv[optind]);
     if(err < 0) return !MPC_STATUS_OK;
 
@@ -164,9 +173,10 @@ main(int argc, char **argv)
         memset(&wav_output, 0, sizeof wav_output);
         wavo_fc.m_seek      = mpc_wav_output_seek;
         wavo_fc.m_write     = mpc_wav_output_write;
-	    if (strcmp(argv[optind + 1], "-") == 0)
+		if (strcmp(argv[optind + 1], "-") == 0) {
+			SET_BINARY_MODE(stdout);
 		    wavo_fc.m_user_data = stdout;
-	    else
+		} else
 			wavo_fc.m_user_data = fopen(argv[optind + 1], "wb");
         if(!wavo_fc.m_user_data) return !MPC_STATUS_OK;
         err = waveformat_output_open(&wav_output, wavo_fc, si.channels, 16, 0, si.sample_freq, (t_wav_uint32) si.samples * si.channels);

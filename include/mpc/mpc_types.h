@@ -72,6 +72,13 @@ typedef unsigned int mpc_uint_t;
 typedef size_t mpc_size_t;
 typedef mpc_uint8_t mpc_bool_t;
 
+// #define LONG_SEEK_TABLE
+#ifdef LONG_SEEK_TABLE  // define as needed (mpc_uint32_t supports files up to 512 MB)
+typedef mpc_uint64_t mpc_seek_t;
+#else
+typedef mpc_uint32_t mpc_seek_t;
+#endif
+
 # define mpc_int64_min -9223372036854775808ll
 # define mpc_int64_max 9223372036854775807ll
 

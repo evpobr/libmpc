@@ -111,7 +111,7 @@ void mpc_demux_get_info(mpc_demux * d, mpc_streaminfo * i);
 // seek
 mpc_status mpc_demux_seek_sample(mpc_demux * d, mpc_uint64_t destsample);
 mpc_status mpc_demux_seek_second(mpc_demux * d, double seconds);
-mpc_size_t mpc_demux_pos(mpc_demux * d);
+mpc_seek_t mpc_demux_pos(mpc_demux * d);
 
 
 #ifdef __cplusplus

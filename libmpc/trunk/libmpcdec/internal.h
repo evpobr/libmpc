@@ -78,7 +78,7 @@ struct mpc_demux_t {
 	mpc_uint_t block_frames; /// frames remaining in current audio block
 
 	// seeking
-	mpc_uint32_t * seek_table;
+	mpc_seek_t * seek_table;
 	mpc_uint_t seek_pwr; /// distance between 2 frames in seek_table = 2^seek_pwr
 	mpc_uint32_t seek_table_size; /// used size in seek_table
 };

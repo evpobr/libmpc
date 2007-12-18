@@ -114,9 +114,8 @@ mpc_demux_fill(mpc_demux * d, mpc_uint32_t min_bytes, int flags)
  * @param min_bytes number of bytes to load after seeking
  */
 static void
-mpc_demux_seek(mpc_demux * d, mpc_size_t fpos, mpc_uint32_t min_bytes) {
-// 	mpc_uint32_t cur_pos = d->r->tell(d->r);
-	mpc_size_t next_pos;
+mpc_demux_seek(mpc_demux * d, mpc_seek_t fpos, mpc_uint32_t min_bytes) {
+	mpc_seek_t next_pos;
 	mpc_int_t bit_offset;
 
 	// FIXME : do not flush the buffer if fpos is in the current buffer
@@ -141,9 +140,10 @@ mpc_demux_seek(mpc_demux * d, mpc_size_t fpos, mpc_uint32_t min_bytes) {
  * @param d demuxer context
  * @return current stream position in bits
  */
-mpc_size_t mpc_demux_pos(mpc_demux * d)
+mpc_seek_t mpc_demux_pos(mpc_demux * d)
 {
-	return ((d->r->tell(d->r) - d->bytes_total + d->bits_reader.buff - d->buffer) << 3) + 8 - d->bits_reader.count;
+	return (((mpc_seek_t)(d->r->tell(d->r)) - d->bytes_total +
+	         d->bits_reader.buff - d->buffer) << 3) + 8 - d->bits_reader.count;
 }
 
 /**
@@ -207,10 +207,10 @@ mpc_status mpc_demux_seek_init(mpc_demux * d)
 	d->seek_pwr = 6;
 	if (d->si.block_pwr > d->seek_pwr)
 		d->seek_pwr = d->si.block_pwr;
-	d->seek_table = malloc((size_t)(2 + d->si.samples / (MPC_FRAME_LENGTH << d->seek_pwr)) * sizeof(mpc_uint32_t));
+	d->seek_table = malloc((size_t)(2 + d->si.samples / (MPC_FRAME_LENGTH << d->seek_pwr)) * sizeof(mpc_seek_t));
 	if (d->seek_table == 0)
 		return MPC_STATUS_FILE;
-	d->seek_table[0] = (mpc_uint32_t)mpc_demux_pos(d);
+	d->seek_table[0] = (mpc_seek_t)mpc_demux_pos(d);
 	d->seek_table_size = 1;
 
 	return MPC_STATUS_OK;
@@ -219,7 +219,7 @@ mpc_status mpc_demux_seek_init(mpc_demux * d)
 static void mpc_demux_ST(mpc_demux * d)
 {
 	mpc_uint64_t tmp;
-	mpc_uint32_t * table;
+	mpc_seek_t * table;
 	mpc_bits_reader r = d->bits_reader;
 	mpc_uint_t i;
 
@@ -227,21 +227,21 @@ static void mpc_demux_ST(mpc_demux * d)
 		return;
 
 	mpc_bits_get_size(&r, &tmp);
-	d->seek_table_size = (mpc_uint32_t) tmp;
+	d->seek_table_size = (mpc_seek_t) tmp;
 	d->seek_pwr = d->si.block_pwr + mpc_bits_read(&r, 4);
 	tmp = 2 + d->si.samples / (MPC_FRAME_LENGTH << d->seek_pwr);
 	if (tmp < d->seek_table_size) tmp = d->seek_table_size;
-	d->seek_table = malloc((size_t)(tmp * sizeof(mpc_uint32_t)));
+	d->seek_table = malloc((size_t)(tmp * sizeof(mpc_seek_t)));
 
 	table = d->seek_table;
 	mpc_bits_get_size(&r, &tmp);
-	table[0] = (mpc_uint32_t) (tmp + d->si.header_position) * 8;
+	table[0] = (mpc_seek_t) (tmp + d->si.header_position) * 8;
 
 	if (d->seek_table_size == 1)
 		return;
 
 	mpc_bits_get_size(&r, &tmp);
-	table[1] = (mpc_uint32_t) (tmp + d->si.header_position) * 8;
+	table[1] = (mpc_seek_t) (tmp + d->si.header_position) * 8;
 
 	for (i = 2; i < d->seek_table_size; i++) {
 		int code = mpc_bits_golomb_dec(&r, 12);
@@ -254,7 +254,7 @@ static void mpc_demux_ST(mpc_demux * d)
 
 static void mpc_demux_SP(mpc_demux * d, int size, int block_size)
 {
-	mpc_size_t cur;
+	mpc_seek_t cur;
 	mpc_uint64_t ptr;
 	mpc_block b;
 
@@ -375,7 +375,7 @@ mpc_status mpc_demux_decode(mpc_demux * d, mpc_frame_info * i)
 			mpc_block b = {{0,0},0};
 			d->bits_reader.count &= -8;
 			if (d->d->decoded_samples == (d->seek_table_size << d->seek_pwr) * MPC_FRAME_LENGTH) {
-				d->seek_table[d->seek_table_size] = (mpc_uint32_t) mpc_demux_pos(d);
+				d->seek_table[d->seek_table_size] = (mpc_seek_t) mpc_demux_pos(d);
 				d->seek_table_size ++;
 			}
 			mpc_demux_fill(d, 11, 0); // max header block size
@@ -406,7 +406,7 @@ mpc_status mpc_demux_decode(mpc_demux * d, mpc_frame_info * i)
 			goto error;
 	} else {
 		if (d->d->decoded_samples == (d->seek_table_size << d->seek_pwr) * MPC_FRAME_LENGTH) {
-			d->seek_table[d->seek_table_size] = (mpc_uint32_t) mpc_demux_pos(d);
+			d->seek_table[d->seek_table_size] = (mpc_seek_t) mpc_demux_pos(d);
 			d->seek_table_size ++;
 		}
 		mpc_demux_fill(d, MAX_FRAME_SIZE, MPC_BUFFER_FULL | MPC_BUFFER_SWAP);
@@ -433,8 +433,9 @@ mpc_status mpc_demux_seek_second(mpc_demux * d, double seconds)
 
 mpc_status mpc_demux_seek_sample(mpc_demux * d, mpc_uint64_t destsample)
 {
-	mpc_uint32_t fwd, samples_to_skip, fpos, i;
+	mpc_uint32_t fwd, samples_to_skip, i;
 	mpc_uint32_t block_samples = MPC_FRAME_LENGTH << d->si.block_pwr;
+	mpc_seek_t fpos;
 
 	destsample += d->si.beg_silence;
 	if (destsample > d->si.samples) destsample = d->si.samples;
@@ -466,7 +467,7 @@ mpc_status mpc_demux_seek_sample(mpc_demux * d, mpc_uint64_t destsample)
 		while(i < fwd) {
 			if (memcmp(b.key, "AP", 2) == 0) {
 				if (d->d->decoded_samples == (d->seek_table_size << d->seek_pwr) * MPC_FRAME_LENGTH) {
-					d->seek_table[d->seek_table_size] = (mpc_uint32_t) mpc_demux_pos(d) - 8 * size;
+					d->seek_table[d->seek_table_size] = (mpc_seek_t) mpc_demux_pos(d) - 8 * size;
 					d->seek_table_size ++;
 				}
 				d->d->decoded_samples += block_samples;
@@ -482,7 +483,7 @@ mpc_status mpc_demux_seek_sample(mpc_demux * d, mpc_uint64_t destsample)
 		mpc_demux_seek(d, fpos, 4);
 		for( ; i < fwd; i++){
 			if (d->d->decoded_samples == (d->seek_table_size << d->seek_pwr) * MPC_FRAME_LENGTH) {
-				d->seek_table[d->seek_table_size] = (mpc_uint32_t) mpc_demux_pos(d);
+				d->seek_table[d->seek_table_size] = (mpc_seek_t) mpc_demux_pos(d);
 				d->seek_table_size ++;
 			}
 			d->d->decoded_samples += block_samples;

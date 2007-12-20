@@ -479,7 +479,7 @@ mpc_status mpc_demux_seek_sample(mpc_demux * d, mpc_uint64_t destsample)
 		}
 		d->bits_reader.buff -= size;
 	} else {
-		mpc_decoder_reset_scf(d->d, fpos != d->seek_table[0]);
+		mpc_decoder_reset_scf(d->d, fwd != 0);
 		mpc_demux_seek(d, fpos, 4);
 		for( ; i < fwd; i++){
 			if (d->d->decoded_samples == (d->seek_table_size << d->seek_pwr) * MPC_FRAME_LENGTH) {

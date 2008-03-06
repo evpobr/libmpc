@@ -45,7 +45,7 @@
 unsigned long crc32(unsigned char *buf, int len);
 
 static const char na[] = "n.a.";
-static const char *versionNames[] = {
+static char const * const versionNames[] = {
     na, "'Unstable/Experimental'", na, na, na, "'quality 0'", "'quality 1'",
     "'Telephone'", "'Thumb'", "'Radio'", "'Standard'", "'Extreme'", "'Insane'",
     "'BrainDead'", "'quality 9'", "'quality 10'"

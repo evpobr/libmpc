@@ -27,14 +27,14 @@ void Klemm ( void );
 void Init_Skalenfaktoren ( void );
 
 // huffsv7.c
-extern const Huffman_t HuffBands [33];
-extern const Huffman_t HuffRes [2][17];
-extern Huffman_t HuffSCFI_1 [4];         // contains tables for SV7-scalefactor select
-extern Huffman_t HuffSCFI_2 [16];         // contains tables for SV7-scalefactor select
-extern Huffman_t HuffDSCF_1 [64];         // contains tables for SV7-scalefactor coding
-extern Huffman_t HuffDSCF_2 [65];         // contains tables for SV7-scalefactor coding
-extern const Huffman_t * HuffQ [2][8];         // points to tables for SV7-sample coding
-extern const Huffman_t HuffQ9up [256];
+extern Huffman_t const HuffBands [33];
+extern Huffman_t const HuffRes [2][17];
+extern Huffman_t const HuffSCFI_1 [4];         // contains tables for SV7-scalefactor select
+extern Huffman_t const HuffSCFI_2 [16];         // contains tables for SV7-scalefactor select
+extern Huffman_t const HuffDSCF_1 [64];         // contains tables for SV7-scalefactor coding
+extern Huffman_t const HuffDSCF_2 [65];         // contains tables for SV7-scalefactor coding
+extern Huffman_t const * const HuffQ [2][8];         // points to tables for SV7-sample coding
+extern Huffman_t const HuffQ9up [256];
 
 /*
  *  SV1:   DATE 13.12.1998

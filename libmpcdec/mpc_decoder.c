@@ -64,9 +64,6 @@ extern const mpc_can_data mpc_can_Q9up;
 //------------------------------------------------------------------------------
 enum
 {
-    EQ_TAP    = 13,                  // length of FIR filter for EQ
-    DELAY     = ((EQ_TAP + 1) / 2),  // delay of FIR
-    FIR_BANDS = 4,                   // number of subbands to be FIR filtered
     MEMSIZE   = MPC_DECODER_MEMSIZE, // overall buffer size
     MEMSIZE2  = (MEMSIZE/2),         // size of one buffer
     MEMMASK   = (MEMSIZE-1)

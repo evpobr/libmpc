@@ -1,3 +1,3 @@
 AUTOMAKE_OPTIONS = foreign
-SUBDIRS = libwavformat libmpcpsy libmpcenc libmpcdec 			mpcenc mpcdec mpcgain \
-		mpc2sv8 include wavcmp mpccut
+SUBDIRS = include libmpcdec libmpcenc libmpcpsy libwavformat mpcenc mpc2sv8 \
+	mpcchap mpccut mpcdec mpcgain wavcmp

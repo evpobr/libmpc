@@ -112,6 +112,9 @@ void mpc_demux_get_info(mpc_demux * d, mpc_streaminfo * i);
 mpc_status mpc_demux_seek_sample(mpc_demux * d, mpc_uint64_t destsample);
 mpc_status mpc_demux_seek_second(mpc_demux * d, double seconds);
 mpc_seek_t mpc_demux_pos(mpc_demux * d);
+// chapters
+mpc_int_t mpc_demux_chap_nb(mpc_demux * d);
+mpc_uint64_t mpc_demux_chap(mpc_demux * d, int chap_nb, char ** tag, mpc_uint_t * tag_size);
 
 
 #ifdef __cplusplus

@@ -10,4 +10,6 @@ AM_PROG_LIBTOOL
 
 AC_CHECK_HEADERS(replaygain/gain_analysis.h)
 
-AC_OUTPUT(Makefile libmpcenc/Makefile libmpcpsy/Makefile mpcenc/Makefile libwavformat/Makefile libmpcdec/Makefile mpcdec/Makefile mpcgain/Makefile mpc2sv8/Makefile include/Makefile wavcmp/Makefile mpccut/Makefile)
+AC_OUTPUT(Makefile include/Makefile libmpcdec/Makefile libmpcenc/Makefile \
+	libmpcpsy/Makefile libwavformat/Makefile mpc2sv8/Makefile mpcchap/Makefile mpccut/Makefile \
+	mpcdec/Makefile mpcenc/Makefile mpcgain/Makefile wavcmp/Makefile)

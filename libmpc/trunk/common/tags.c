@@ -21,7 +21,21 @@
  *    - '/' and '\' should be possible as PATH_SEP
  */
 
-#include "mpcenc.h"
+// #include "mpcenc.h"
+#include <stdio.h>
+#include <mpc/mpc_types.h>
+
+// Path separator
+#if defined __unix__  ||  defined __bsdi__  ||  defined __FreeBSD__  ||  defined __OpenBSD__  ||  defined __NetBSD__  ||  defined __APPLE__
+# define PATH_SEP               '/'
+# define DRIVE_SEP              '\0'
+#elif defined _WIN32  ||  defined __TURBOC__  ||  defined __ZTC__  ||  defined _MSC_VER
+# define PATH_SEP               '\\'
+# define DRIVE_SEP              ':'
+#else
+# define PATH_SEP               '/'         // Amiga: C:/
+# define DRIVE_SEP              ':'
+#endif
 
 #ifdef USE_WIDECHAR
 # include <wchar.h>
@@ -804,13 +818,24 @@ cmpfn2 ( const void* p1, const void* p2 )
     return q1 -> valuelen - q2 -> valuelen;
 }
 
-/*
- *  Writes collect tag items and write it to a file.
- *  Items are destroyed, so tags can only be written once.
- */
+#define TAG_NO_HEADER 1
+#define TAG_NO_FOOTER 2
+#define TAG_NO_PREAMBLE 4
 
+
+/**
+ * Writes collect tag items and write it to a file.
+ * Items are destroyed, so tags can only be written once.
+ * @param fp 
+ * @param Version
+ * @param flags options for writing header / footer :
+ *              1 : do not write header
+ *              2 : do not write footer
+ *              4 : do not write "APETAGEX"
+ * @return 
+ */
 int
-FinalizeTags ( FILE* fp, unsigned int Version )
+FinalizeTags ( FILE* fp, unsigned int Version, unsigned int flags )
 {
     static unsigned char  H [32] = "APETAGEX";
     unsigned char         dw [8];
@@ -820,6 +845,15 @@ FinalizeTags ( FILE* fp, unsigned int Version )
 
     if ( TagCount == 0 )
         return 0;
+	
+	if (flags & TAG_NO_PREAMBLE) {
+		estimatedbytes -= 8;
+		writtenbytes += 8;
+	}
+	if (flags & TAG_NO_FOOTER)
+		estimatedbytes = 0;
+	if (flags & TAG_NO_HEADER)
+		writtenbytes = 0;
 
     qsort ( T, TagCount, sizeof (*T), cmpfn2 );
 
@@ -827,7 +861,7 @@ FinalizeTags ( FILE* fp, unsigned int Version )
         estimatedbytes += 9 + T[i] . keylen + T[i] . valuelen;
 
     if ( estimatedbytes >= 8192 + 103 )
-        stderr_printf ( "\nTag is %.1f Kbyte long. This is longer than the maximum recommended 8 KByte.\n\a", estimatedbytes/1024. );
+        fprintf (stderr, "\nTag is %.1f Kbyte long. This is longer than the maximum recommended 8 KByte.\n\a", estimatedbytes/1024. );
 
     H [ 8] = Version >>  0;
     H [ 9] = Version >>  8;
@@ -843,7 +877,12 @@ FinalizeTags ( FILE* fp, unsigned int Version )
     H [19] = TagCount >> 24;
 
     H [23] = 0x80 | 0x20;
-    writtenbytes += fwrite ( H, 1, 32, fp );
+	if (!(flags & TAG_NO_HEADER)) {
+		if (flags & TAG_NO_PREAMBLE)
+			writtenbytes += fwrite ( H + 8, 1, 24, fp );
+		else
+    		writtenbytes += fwrite ( H, 1, 32, fp );
+	}
 
     for ( i = 0; i < TagCount; i++ ) {
         dw [0] = T [i] . valuelen >>  0;
@@ -862,10 +901,15 @@ FinalizeTags ( FILE* fp, unsigned int Version )
     }
 
     H [23] = 0x80;
-    writtenbytes += fwrite ( H, 1, 32, fp );
+	if (!(flags & TAG_NO_FOOTER)) {
+		if (flags & TAG_NO_PREAMBLE)
+			writtenbytes += fwrite ( H + 8, 1, 24, fp );
+		else
+			writtenbytes += fwrite ( H, 1, 32, fp );
+	}
 
     if ( estimatedbytes != writtenbytes )
-        stderr_printf ( "\nError writing APE tag.\n" );
+		fprintf (stderr, "\nError writing APE tag.\n" );
 
     TagCount = 0;
     return 0;
@@ -914,7 +958,7 @@ CopyTags_ID3 ( FILE* fp )
     if ( -1 == fseek ( fp, -128L, SEEK_END ) )
         return -1;
 
-    if ( 128 != READ ( fp, tmp, 128 ) )
+	if ( 128 != fread(tmp, 1, 128, fp) )
         return -1;
 
     if ( 0 != memcmp ( tmp, "TAG", 3 ) ) {
@@ -969,7 +1013,7 @@ CopyTags_APE ( FILE* fp )
 
     if ( -1 == fseek ( fp, -(long)sizeof T, SEEK_END ) )
         return -1;
-    if ( sizeof(T) != READ ( fp, &T, sizeof T ) )
+	if ( sizeof(T) != fread  (&T, 1, sizeof T, fp) )
         return -1;
     if ( memcmp ( T.ID, "APETAGEX", sizeof(T.ID) ) != 0 )
         return -1;
@@ -982,7 +1026,7 @@ CopyTags_APE ( FILE* fp )
     if ( -1 == fseek ( fp, -(long)TagLen, SEEK_END ) )
         return -1;
     memset ( buff, 0, sizeof(buff) );
-    if ( TagLen - sizeof T != READ ( fp, buff, TagLen - sizeof T ) )
+	if ( TagLen - sizeof T != fread  (buff, 1, TagLen - sizeof T, fp) )
         return -1;
 
     TagCount = Read_LE_Uint32 (T.TagCount);
@@ -996,40 +1040,6 @@ CopyTags_APE ( FILE* fp )
     }
 
     return 0;
-}
-
-static void
-FullPathName ( char* dst, size_t dstlen, const char* filename )         // Can contain stuff like ".." and "."
-{
-    // const char*  p;
-    char*        q     = dst;
-
-#if DRIVE_SEP != '\0'
-    int          drive = 0;
-
-    if ( isalpha (filename[0])  &&  filename[1] == DRIVE_SEP  &&  filename[2] != PATH_SEP ) {
-        drive     = filename[0] & 0x1F;
-        filename += 2;
-    }
-#endif
-
-    if ( filename[0] != PATH_SEP ) {
-#ifdef _WIN32
-        _getdcwd( drive, dst, dstlen );
-#else
-        getcwd ( dst, dstlen );
-#endif
-        q += strlen (q);
-#ifdef _WIN32
-        if ( dst[0] != PATH_SEP  ||  dst[1] != '\0' )
-#else
-        if ( dst[2] != PATH_SEP  ||  dst[3] != '\0' )
-#endif
-            *q++ = PATH_SEP;
-    }
-
-    strcpy ( q, filename );
-    return;
 }
 
 /********************************************************************************************/
@@ -1081,14 +1091,6 @@ static const char* const  parser_strings [] = {
     "/A/C_0x",
 };
 
-
-static void
-copy ( char* dst, const char* src, size_t len )
-{
-    memcpy ( dst, src, len );
-    dst [len] = '\0';
-}
-
 /*
  *    dst[0] = Artist
  *    dst[1] = CD
@@ -1101,212 +1103,6 @@ copy ( char* dst, const char* src, size_t len )
 #ifndef isdigit
 # define isdigit(x)         ((unsigned int)((x) - '0') < 10)
 #endif
-
-static int
-parse ( char** dst, const char* src, const char* format )
-{
-    int          i;
-    const char*  srcend = src + strlen(src);
-    const char*  p;
-    char*        q;
-
-    for ( i = 0; i < 6; i++)
-        dst[i][0] = '\0';
-
-    for ( i = strlen(format); i-- > 0; ) {
-        p = srcend;
-#ifndef STFU
-        stderr_printf ( "%c: ", format[i] );
-#endif
-        switch ( format[i] ) {
-        case '.':
-        case ' ':
-        case '/':                               // !!!!!!!
-            if (p[-1] != format[i])
-                return 1;
-            p--;
-            break;
-        case '_':
-            if (0 != memcmp (p-4, " -- ", 4))
-                return 1;
-            p -= 4;
-            break;
-        case '-':
-            if (0 != memcmp (p-3, " - ", 3))
-                return 1;
-            p -= 3;
-            break;
-        case '0':
-            if (p[-1] != ']' || p[-2] != '0' || p[-3] != '0' || p[-4] != '[')
-                return 1;
-            copy (dst[4], p-3, 2);
-            p -= 4;
-            break;
-        case 'n':
-            if (p[-1] != ']' || !isdigit(p[-2]) || !isdigit(p[-3]) || p[-4] != '[')
-                return 1;
-            copy (dst[4], p-3, 2);
-            p -= 4;
-            break;
-        case 'M':
-            if ( !isdigit(p[-1]) || !isdigit(p[-2]) )
-                return 1;
-            copy (dst[4], p-2, 2);
-            p -= 2;
-            break;
-        case 'N':
-            if (p[-1] != ')' || !isdigit(p[-2]) || p[-3] != ' ' || p[-4] != 'D' || p[-5] != 'C' || p[-6] != '(')
-                return 1;
-            dst[3][0] = ' ';
-            copy (dst[3]+1, p-6, 6);
-            p -= 6;
-            break;
-        case 'A':
-            q = dst[0]; goto big;
-        case 'C':
-            q = dst[1]; goto big;
-        case 'T':
-            q = dst[2]; goto big;
-        big:
-            while ( 0 == memcmp (p-4, "/mpc", 4)  ||
-                    0 == memcmp (p-4, "/mp3", 4)  ||
-                    0 == memcmp (p-4, "/pac", 4)  ||
-                    0 == memcmp (p-4, "/ape", 4)  ||
-                    0 == memcmp (p-4, "/pac", 4)  ||
-                    0 == memcmp (p-3, "/.." , 3)  ||
-                    0 == memcmp (p-2, "/."  , 2)
-                  ) {
-                      do {
-                          p--;
-                          srcend--;
-                      } while ( *p != PATH_SEP );
-                }
-            while ( p[-1] != PATH_SEP  &&
-                    p[-1] != DRIVE_SEP &&
-                    0 != memcmp (p-4, " -- ", 4 )  &&
-                    (p[-1] != ')' || !isdigit(p[-2]) || p[-3] != ' ' || p[-4] != 'D' || p[-5] != 'C' || p[-6] != '(')  &&
-                    (p[-1] != ' ' || p[-2] != ']' || !isdigit(p[-3]) || !isdigit(p[-4]) || p[-5] != '[') &&
-                    (p[-1] != ']' || p[-2] != '0' || p[-3] != '0' || p[-4] != '[')
-                  )
-                p--;
-            copy ( q, p, srcend - p );
-            break;
-        case 'x':
-            do {
-                p--;
-                if (p[0] == PATH_SEP || p[0] == DRIVE_SEP)
-                    return -1;
-            } while (*p != '.');
-            copy (dst[5], p, srcend-p );
-            break;
-        }
-#ifndef STFU
-        stderr_printf ( "%*.*s\033[7m%*.*s\033[0m\n", p-src, p-src, src, srcend-p, srcend-p, p );
-#endif
-        srcend = p;
-    }
-    return 0;
-}
-
-static int
-hexdigit ( const char s )
-{
-    if ( (unsigned char)(s-'0') < 10u )
-        return s-'0';
-    if ( (unsigned char)(s-'A') <  6u )
-        return s-'A'+10;
-    return -1;
-}
-
-static void
-spaceconverting ( char* dst, const char* src )          // can work inplace
-{
-    for ( ; src[0] != '\0' ; src++) {
-        if      ( src[0] == '_' )
-            *dst++ = ' ';
-        else if ( src[0] == '%'  &&  hexdigit(src[1]) >= 0  &&  hexdigit(src[2]) >= 0 )
-            *dst++ = hexdigit(src[1]) * 16 + hexdigit(src[2]), src += 2;
-        else
-            *dst++ = *src;
-    }
-    *dst = '\0';
-}
-
-
-static int
-Parser ( const char* src )
-{
-    size_t  i;
-    char    tmp  [6] [1024];
-    char*   buff [6] = { tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5] };
-    char    merge [1024];
-    char*   q;
-
-#ifndef STFU
-    stderr_printf ( "\n  %s\n", src );
-#endif
-
-    memset ( tmp  , 0, sizeof tmp   );
-    memset ( merge, 0, sizeof merge );
-
-    for ( i = 0; i < sizeof(parser_strings)/sizeof(*parser_strings); i++ ) {
-        if ( 0 == parse ( buff, src, parser_strings[i] ) ) {
-            sprintf ( merge, "%s%s", tmp[1], tmp[3] );
-            q = merge + strlen (merge);
-
-            if ( q-7 >= merge  &&  q[-7]==' '  &&  q[-6]=='('  && atoi(q-5) >= 1900  &&  atoi(q-5) < 2050  &&  q[-1] == ')' ) {
-                q[-1] = '\0';
-                q[-7] = '\0';
-                q -= 5;
-            }
-            else {
-                q = NULL;
-            }
-
-            spaceconverting ( tmp[0], tmp[0] );
-            spaceconverting ( merge , merge );
-            spaceconverting ( tmp[2], tmp[2] );
-            spaceconverting ( tmp[4], tmp[4] );
-            spaceconverting ( tmp[5], tmp[5] );
-
-            stderr_printf ("\n");
-            stderr_printf ("Artist = %s\n", tmp[0] );
-            stderr_printf ("CD     = %s\n", merge  );
-            stderr_printf ("Title  = %s\n", tmp[2] );
-            stderr_printf ("No#    = %s\n", tmp[4] );
-            stderr_printf ("Extent = %s\n", tmp[5] );
-            stderr_printf ("Year   = %s\n", q  ?  q  :  "????" );
-#if 1
-            if ( tmp[0][0]  &&  ! TagKeyExists ( "Artist", 0 ) ) addtag ( "Artist", 0, tmp[0], strlen (tmp[0]), 5, 0 );
-            if ( merge[0]   &&  ! TagKeyExists ( "Album" , 0 ) ) addtag ( "Album" , 0, merge , strlen (merge) , 5, 0 );
-            if ( tmp[2][0]  &&  ! TagKeyExists ( "Title" , 0 ) ) addtag ( "Title" , 0, tmp[2], strlen (tmp[2]), 5, 0 );
-            if ( tmp[4][0]  &&  ! TagKeyExists ( "Track" , 0 ) ) addtag ( "Track" , 0, tmp[4], strlen (tmp[4]), 5, 0 );
-            if ( q != NULL  &&  ! TagKeyExists ( "Year"  , 0 ) ) addtag ( "Year"  , 0, q     , 4              , 5, 0 );
-#endif
-            return 1;
-        }
-#ifndef STFU
-        stderr_printf ("???\n--\n");
-#endif
-    }
-
-    return 0;
-}
-
-
-/*******************************************************************************/
-
-
-static int
-CopyTags_Name ( const char* filename )
-{
-    char         buff [4096];
-
-    FullPathName  ( buff, sizeof buff, filename );
-    Parser        ( buff );
-    return 0;
-}
-
 
 int
 CopyTags ( const char* filename )
@@ -1322,7 +1118,6 @@ CopyTags ( const char* filename )
 
     CopyTags_APE  (fp);                 // APE tags have higher priority than ID3V1 tags
     CopyTags_ID3  (fp);
-//     CopyTags_Name (filename);
 
     fclose (fp);
     return 0;

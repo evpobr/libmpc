@@ -1767,7 +1767,7 @@ mainloop ( int argc, char** argv )
 
     ShowProgress (&m, SamplesInWAVE, SamplesInWAVE, e.outputBits );
 
-    FinalizeTags ( e.outputFile, APE_Version );
+    FinalizeTags ( e.outputFile, APE_Version, 0 );
     fclose ( e.outputFile );
     fclose ( Wave.fp );
 	mpc_encoder_exit(&e);

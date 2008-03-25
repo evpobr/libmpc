@@ -257,18 +257,82 @@ static void mpc_demux_SP(mpc_demux * d, int size, int block_size)
 	mpc_seek_t cur;
 	mpc_uint64_t ptr;
 	mpc_block b;
+	int st_head_size;
 
 	cur = mpc_demux_pos(d);
 	mpc_bits_get_size(&d->bits_reader, &ptr);
 	mpc_demux_seek(d, (ptr - size) * 8 + cur, 11);
-	mpc_bits_get_block(&d->bits_reader, &b);
+	st_head_size = mpc_bits_get_block(&d->bits_reader, &b);
 	if (memcmp(b.key, "ST", 2) == 0) {
+		d->chap_pos = (ptr - size + b.size + st_head_size) * 8 + cur;
+		d->chap_nb = -1;
 		mpc_demux_fill(d, (mpc_uint32_t) b.size, 0);
 		mpc_demux_ST(d);
 	}
 	mpc_demux_seek(d, cur, 11 + block_size);
 }
 
+static void mpc_demux_chap_find(mpc_demux * d)
+{
+	if (d->chap_pos == 0) {
+		// FIXME : find chapters from end of file
+	}
+	mpc_block b;
+	int tag_size = 0, chap_size = 0, size, i = 0;
+	d->chap_nb = 0;
+	mpc_demux_seek(d, d->chap_pos, 20);
+	size = mpc_bits_get_block(&d->bits_reader, &b);
+	while (memcmp(b.key, "CT", 2) == 0) {
+		mpc_uint64_t chap_sample;
+		d->chap_nb++;
+		chap_size += size;
+		size = mpc_bits_get_size(&d->bits_reader, &chap_sample);
+		chap_size += size;
+		tag_size += b.size - size;
+		mpc_demux_seek(d, d->chap_pos + (chap_size + tag_size) * 8, 20);
+		size = mpc_bits_get_block(&d->bits_reader, &b);
+	}
+
+	d->chap = malloc(sizeof(mpc_chap_t) * d->chap_nb + tag_size);
+	char * ptag = (char*)(d->chap + d->chap_nb);
+
+	mpc_demux_seek(d, d->chap_pos, 11);
+	size = mpc_bits_get_block(&d->bits_reader, &b);
+	while (memcmp(b.key, "CT", 2) == 0) {
+		mpc_demux_fill(d, 11 + (mpc_uint32_t) b.size, 0);
+		size = mpc_bits_get_size(&d->bits_reader, &d->chap[i].sample);
+		memcpy(ptag, d->bits_reader.buff + ((8 - d->bits_reader.count) >> 3), b.size - size);
+		d->bits_reader.buff += b.size - size;
+		d->chap[i].tag_size = b.size - size;
+		d->chap[i].tag = ptag;
+		ptag += b.size - size;
+		i++;
+		size = mpc_bits_get_block(&d->bits_reader, &b);
+	}
+	
+	d->bits_reader.buff -= size;
+}
+
+mpc_int_t mpc_demux_chap_nb(mpc_demux * d)
+{
+	if (d->chap_nb == -1)
+		mpc_demux_chap_find(d);
+	return d->chap_nb;
+}
+
+mpc_uint64_t mpc_demux_chap(mpc_demux * d, int chap_nb, char ** tag, mpc_uint_t * tag_size)
+{
+	if (d->chap_nb == -1)
+		mpc_demux_chap_find(d);
+	if (chap_nb >= d->chap_nb)
+		return 0;
+	if (tag != 0 && tag_size != 0) {
+		*tag = d->chap[chap_nb].tag;
+		*tag_size = d->chap[chap_nb].tag_size;
+	}
+	return d->chap[chap_nb].sample;
+}
+		
 static mpc_status mpc_demux_header(mpc_demux * d)
 {
 	char magic[4];
@@ -338,6 +402,7 @@ mpc_demux * mpc_demux_init(mpc_reader * p_reader)
 	if (p_tmp != 0) {
 		memset(p_tmp, 0, sizeof(mpc_demux));
 		p_tmp->r = p_reader;
+		p_tmp->chap_nb = -1;
 		mpc_demux_clear_buff(p_tmp);
 		if (mpc_demux_header(p_tmp) == MPC_STATUS_OK &&
 				  mpc_demux_seek_init(p_tmp) == MPC_STATUS_OK) {
@@ -357,6 +422,7 @@ void mpc_demux_exit(mpc_demux * d)
 {
 	mpc_decoder_exit(d->d);
 	free(d->seek_table);
+	free(d->chap);
 	free(d);
 }
 

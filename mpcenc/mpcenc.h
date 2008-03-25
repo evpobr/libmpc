@@ -270,7 +270,7 @@ void    Regression       ( float* const _r, float* const _b, const float* p, con
 
 // tags.c
 void    Init_Tags        ( void );
-int     FinalizeTags     ( FILE* fp, unsigned int Version );
+int     FinalizeTags     ( FILE* fp, unsigned int Version, unsigned int flags );
 int     addtag           ( const char* key, size_t keylen, const char* value, size_t valuelen, int converttoutf8, int flags );
 int     gettag           ( const char* key, char* dst, size_t len );
 int     CopyTags         ( const char* filename );

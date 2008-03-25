@@ -2,7 +2,7 @@
 <kdevelop>
   <general>
     <author>Nicolas Botti</author>
-    <email></email>
+    <email/>
     <version>0.1</version>
     <projectmanagement>KDevAutoProject</projectmanagement>
     <primarylanguage>C</primarylanguage>
@@ -13,11 +13,13 @@
     <ignoreparts/>
     <projectdirectory>.</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>
-    <description></description>
+    <description/>
+    <projectname>libmpc</projectname>
+    <defaultencoding/>
   </general>
   <kdevautoproject>
     <general>
-      <activetarget>wavcmp/wavcmp</activetarget>
+      <activetarget>mpcchap/mpcchap</activetarget>
       <useconfiguration>optimized</useconfiguration>
     </general>
     <run>
@@ -30,11 +32,20 @@
         <mpcgain/>
         <mpc2sv8>~/test1.mpc ~/test1-conv.mpc</mpc2sv8>
         <wavcmp/>
+        <mpcchap/>
       </runarguments>
       <customdirectory>/</customdirectory>
       <programargs/>
       <autocompile>true</autocompile>
       <envvars/>
+      <debugarguments>
+        <mpcgain/>
+        <mpcchap>/home/nico/test.mpc /home/nico/chaps.ini</mpcchap>
+      </debugarguments>
+      <cwd>
+        <mpcgain>/home/nico/src/musepack/libmpc/optimized/./mpcchap</mpcgain>
+        <mpcchap>/home/nico/src/musepack/libmpc/optimized/./mpcchap</mpcchap>
+      </cwd>
     </run>
     <configurations>
       <optimized>
@@ -44,15 +55,15 @@
         <f77compiler>kdevg77options</f77compiler>
         <cflags>-O3 -fomit-frame-pointer -pipe -Wall -m3dnow -msse -ffast-math</cflags>
         <envvars/>
-        <configargs></configargs>
-        <topsourcedir></topsourcedir>
-        <cppflags>-I/home/nico/src/musepack/svn/libreplaygain/include</cppflags>
-        <ldflags>-L/home/nico/src/musepack/svn/libreplaygain/src</ldflags>
-        <ccompilerbinary></ccompilerbinary>
-        <cxxcompilerbinary></cxxcompilerbinary>
-        <f77compilerbinary></f77compilerbinary>
-        <cxxflags></cxxflags>
-        <f77flags></f77flags>
+        <configargs/>
+        <topsourcedir/>
+        <cppflags>-I/home/nico/src/musepack/libreplaygain/include</cppflags>
+        <ldflags>-L/home/nico/src/musepack/libreplaygain/src</ldflags>
+        <ccompilerbinary/>
+        <cxxcompilerbinary/>
+        <f77compilerbinary/>
+        <cxxflags/>
+        <f77flags/>
       </optimized>
       <debug>
         <configargs>--enable-debug=full</configargs>
@@ -63,8 +74,8 @@
         <cflags>-O0 -Wall -g3</cflags>
         <envvars/>
         <topsourcedir/>
-        <cppflags>-I/home/nico/src/musepack/svn/libreplaygain/include</cppflags>
-        <ldflags>-L/home/nico/src/musepack/svn/libreplaygain/src</ldflags>
+        <cppflags>-I/home/nico/src/musepack/libreplaygain/include</cppflags>
+        <ldflags>-L/home/nico/src/musepack/libreplaygain/src</ldflags>
         <ccompilerbinary/>
         <cxxcompilerbinary/>
         <f77compilerbinary/>
@@ -152,7 +163,7 @@
   </kdevfileview>
   <kdevdocumentation>
     <projectdoc>
-      <docsystem>Collection de documentation Doxygen</docsystem>
+      <docsystem>Doxygen Documentation Collection</docsystem>
       <docurl>mpcenc.tag</docurl>
       <usermanualurl/>
     </projectdoc>
@@ -186,15 +197,45 @@
       <codeCompletionDelay>250</codeCompletionDelay>
       <argumentsHintDelay>400</argumentsHintDelay>
       <headerCompletionDelay>250</headerCompletionDelay>
+      <showOnlyAccessibleItems>false</showOnlyAccessibleItems>
+      <completionBoxItemOrder>0</completionBoxItemOrder>
+      <howEvaluationContextMenu>true</howEvaluationContextMenu>
+      <showCommentWithArgumentHint>true</showCommentWithArgumentHint>
+      <statusBarTypeEvaluation>false</statusBarTypeEvaluation>
+      <namespaceAliases>std=_GLIBCXX_STD;__gnu_cxx=std</namespaceAliases>
+      <processPrimaryTypes>true</processPrimaryTypes>
+      <processFunctionArguments>false</processFunctionArguments>
+      <preProcessAllHeaders>false</preProcessAllHeaders>
+      <parseMissingHeadersExperimental>false</parseMissingHeadersExperimental>
+      <resolveIncludePathsUsingMakeExperimental>false</resolveIncludePathsUsingMakeExperimental>
+      <alwaysParseInBackground>true</alwaysParseInBackground>
+      <usePermanentCaching>true</usePermanentCaching>
+      <alwaysIncludeNamespaces>false</alwaysIncludeNamespaces>
+      <includePaths>.;</includePaths>
     </codecompletion>
     <creategettersetter>
-      <prefixGet></prefixGet>
+      <prefixGet/>
       <prefixSet>set</prefixSet>
       <prefixVariable>m_,_</prefixVariable>
       <parameterName>theValue</parameterName>
       <inlineGet>true</inlineGet>
       <inlineSet>true</inlineSet>
     </creategettersetter>
+    <qt>
+      <used>false</used>
+      <version>3</version>
+      <includestyle>3</includestyle>
+      <root></root>
+      <designerintegration>EmbeddedKDevDesigner</designerintegration>
+      <qmake></qmake>
+      <designer></designer>
+      <designerpluginpaths/>
+    </qt>
+    <splitheadersource>
+      <enabled>false</enabled>
+      <synchronize>true</synchronize>
+      <orientation>Vertical</orientation>
+    </splitheadersource>
   </kdevcppsupport>
   <cppsupportpart>
     <filetemplates>
@@ -205,14 +246,15 @@
   <kdevdebugger>
     <general>
       <programargs>&quot;/home/nico/test.wav&quot; &quot;/home/nico/test2.wav&quot;</programargs>
-      <gdbpath></gdbpath>
+      <gdbpath/>
       <dbgshell>libtool</dbgshell>
-      <configGdbScript></configGdbScript>
-      <runShellScript></runShellScript>
-      <runGdbScript></runGdbScript>
+      <configGdbScript/>
+      <runShellScript/>
+      <runGdbScript/>
       <breakonloadinglibs>true</breakonloadinglibs>
       <separatetty>false</separatetty>
       <floatingtoolbar>false</floatingtoolbar>
+      <raiseGDBOnStart>false</raiseGDBOnStart>
     </general>
     <display>
       <staticmembers>false</staticmembers>

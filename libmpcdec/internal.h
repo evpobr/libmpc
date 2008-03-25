@@ -65,6 +65,12 @@ struct mpc_bits_reader_t {
 #define MAX_FRAME_SIZE 4352
 #define DEMUX_BUFFER_SIZE (65536 - MAX_FRAME_SIZE) // need some space as sand box
 
+typedef struct {
+	mpc_uint64_t sample;
+	mpc_uint_t tag_size;
+	char * tag;
+} mpc_chap_t;
+
 struct mpc_demux_t {
 	mpc_reader * r;
 	mpc_decoder * d;
@@ -81,6 +87,12 @@ struct mpc_demux_t {
 	mpc_seek_t * seek_table;
 	mpc_uint_t seek_pwr; /// distance between 2 frames in seek_table = 2^seek_pwr
 	mpc_uint32_t seek_table_size; /// used size in seek_table
+
+	// chapters
+	mpc_seek_t chap_pos; /// supposed position of the first chapter block
+	mpc_int_t chap_nb; /// number of chapters (-1 if unknown, 0 if no chapter)
+	mpc_chap_t * chap; /// chapters position and tag
+	
 };
 
 /// helper functions used by multiple files

@@ -25,6 +25,10 @@
 #include <stdio.h>
 #include <mpc/mpc_types.h>
 
+#ifdef _WIN32
+# include <windows.h>
+#endif
+
 // Path separator
 #if defined __unix__  ||  defined __bsdi__  ||  defined __FreeBSD__  ||  defined __OpenBSD__  ||  defined __NetBSD__  ||  defined __APPLE__
 # define PATH_SEP               '/'
@@ -826,13 +830,13 @@ cmpfn2 ( const void* p1, const void* p2 )
 /**
  * Writes collect tag items and write it to a file.
  * Items are destroyed, so tags can only be written once.
- * @param fp 
+ * @param fp
  * @param Version
  * @param flags options for writing header / footer :
  *              1 : do not write header
  *              2 : do not write footer
  *              4 : do not write "APETAGEX"
- * @return 
+ * @return
  */
 int
 FinalizeTags ( FILE* fp, unsigned int Version, unsigned int flags )
@@ -845,7 +849,7 @@ FinalizeTags ( FILE* fp, unsigned int Version, unsigned int flags )
 
     if ( TagCount == 0 )
         return 0;
-	
+
 	if (flags & TAG_NO_PREAMBLE) {
 		estimatedbytes -= 8;
 		writtenbytes += 8;

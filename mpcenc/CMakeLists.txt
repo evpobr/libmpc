@@ -9,7 +9,7 @@ include_directories(${libmpc_SOURCE_DIR}/libmpcenc)
 link_directories(${libmpc_BINARY_DIR}/libmpcpsy)
 link_directories(${libmpc_BINARY_DIR}/libmpcenc)
 
-add_executable(mpcenc keyboard mpcenc pipeopen stderr tags wave_in winmsg)
+add_executable(mpcenc keyboard mpcenc pipeopen stderr ${libmpc_SOURCE_DIR}/common/tags wave_in winmsg)
 
 target_link_libraries(mpcenc mpcpsy_static)
 target_link_libraries(mpcenc mpcenc_static)

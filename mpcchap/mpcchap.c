@@ -37,9 +37,7 @@
 #include "../libmpcenc/libmpcenc.h"
 #include "iniparser.h"
 
-// #include <sys/types.h>
 #include <sys/stat.h>
-// #include <unistd.h> 
 
 // tags.c
 void    Init_Tags        ( void );
@@ -56,53 +54,37 @@ int     addtag           ( const char* key, size_t keylen, const char* value, si
 
 static void usage(const char *exename)
 {
-	printf("Usage: %s <infile.mpc> <chapterfile.ini>\n", exename);
+	printf(
+	        "Usage: %s <infile.mpc> <chapterfile.ini>\n"
+	        "   if chapterfile.ini exists, chapter tags in infile.mpc will be\n"
+	        "   replaced by those from chapterfile.ini, else chapters will be\n"
+	        "   dumped to chapterfile.ini\n"
+	        "   chapterfile.ini is something like :\n"
+	        "   	[chapter_start_sample]\n"
+	        "   	SomeKey=Some Value\n"
+	        "   	SomeOtherKey=Some Other Value\n"
+	        "   	[other_chapter_start]\n"
+	        "   	YouKnowWhatKey=I think you start to understand ...\n"
+	        , exename);
 }
 
-int main(int argc, char **argv)
+mpc_status add_chaps(char * mpc_file, char * chap_file, mpc_demux * demux, mpc_streaminfo * si)
 {
-	mpc_reader reader;
-	mpc_demux* demux;
-	mpc_streaminfo si;
-	char * mpc_file, * chap_file;
-	FILE * in_file;
-	mpc_status err;
-	int i;
-
-	if (argc != 3)
-		usage(argv[0]);
-	
-	mpc_file = argv[1];
-	chap_file = argv[2];
-
-	err = mpc_reader_init_stdio(&reader, argv[1]);
-	if(err < 0) return !MPC_STATUS_OK;
-
-	demux = mpc_demux_init(&reader);
-	if(!demux) return !MPC_STATUS_OK;
-	mpc_demux_get_info(demux,  &si);
-
-	if (si.stream_version < 8) {
-		fprintf(stderr, "this file cannot be edited, please convert it first to sv8 using mpc2sv8\n");
-		exit(!MPC_STATUS_OK);
-	}
-
-	int chap_nb = mpc_demux_chap_nb(demux);
-	for (i = 0; i < chap_nb; i++) {
-		printf("chap %i : %i\n", i+1, mpc_demux_chap(demux, i, 0, 0));
-	}
-	int chap_pos = (demux->chap_pos >> 3) + si.header_position;
-	int end_pos = mpc_demux_pos(demux) >> 3;
-	int chap_size = end_pos - chap_pos;
-	printf("chap-size : %i, end_pos : %x\n", chap_size, end_pos);
 	struct stat stbuf;
-	stat(argv[1], &stbuf);
+	FILE * in_file;
+	int chap_pos, end_pos, chap_size, i;
+
+	chap_pos = (demux->chap_pos >> 3) + si->header_position;
+	end_pos = mpc_demux_pos(demux) >> 3;
+	chap_size = end_pos - chap_pos;
+
+	stat(mpc_file, &stbuf);
 	char * tmp_buff = malloc(stbuf.st_size - chap_pos - chap_size);
 	in_file = fopen( mpc_file, "r+b" );
 	fseek(in_file, chap_pos + chap_size, SEEK_SET);
 	fread(tmp_buff, 1, stbuf.st_size - chap_pos - chap_size, in_file);
 	fseek(in_file, chap_pos, SEEK_SET);
-	
+
 	dictionary * dict = iniparser_load(chap_file);
 
 	int nchap = iniparser_getnsec(dict);
@@ -111,6 +93,8 @@ int main(int argc, char **argv)
 		int j, nitem, tag_len = 0;
 		char * chap_sec = iniparser_getsecname(dict, i);
 		mpc_int64_t chap_pos = atoll(chap_sec);
+		if (chap_pos > si->samples - si->beg_silence)
+			fprintf(stderr, "warning : chapter %i starts @ %lli after the end of the stream (%lli)\n", i + 1, chap_pos, si->samples - si->beg_silence);
 		nitem = iniparser_getnkey(dict, i);
 		for (j = 0; j < nitem; j++) {
 			char * item_key, * item_value;
@@ -130,11 +114,88 @@ int main(int argc, char **argv)
 		fwrite(sample_offset, 1, offset_size, in_file);
 		FinalizeTags(in_file, TAG_VERSION, TAG_NO_FOOTER | TAG_NO_PREAMBLE);
 	}
-	
+
 	fwrite(tmp_buff, 1, stbuf.st_size - chap_pos - chap_size, in_file);
 	ftruncate(fileno(in_file), ftell(in_file));
+
 	fclose(in_file);
 	free(tmp_buff);
 	iniparser_freedict(dict);
-	return 0;
+
+	return MPC_STATUS_OK;
+}
+
+mpc_status dump_chaps(mpc_demux * demux, char * chap_file, int chap_nb)
+{
+	int i;
+	unsigned int tag_size;
+	FILE * out_file;
+	char * tag;
+
+	if (chap_nb <= 0)
+		return MPC_STATUS_OK;
+
+	out_file = fopen(chap_file, "wb");
+	if (out_file == 0)
+		return !MPC_STATUS_OK;
+
+	for (i = 0; i < chap_nb; i++) {
+		int item_count, j;
+		fprintf(out_file, "[%lli]\n", mpc_demux_chap(demux, i, &tag, &tag_size));
+		item_count = tag[8] | (tag[9] << 8) | (tag[10] << 16) | (tag[11] << 24);
+		tag += 24;
+		for( j = 0; j < item_count; j++){
+			int key_len = strlen(tag + 8);
+			int value_len = tag[0] | (tag[1] << 8) | (tag[2] << 16) | (tag[3] << 24);
+			fprintf(out_file, "%s=%.*s\n", tag + 8, value_len, tag + 9 + key_len);
+			tag += 9 + key_len + value_len;
+		}
+		fprintf(out_file, "\n");
+	}
+
+	fclose(out_file);
+
+	return MPC_STATUS_OK;
+}
+
+int main(int argc, char **argv)
+{
+	mpc_reader reader;
+	mpc_demux* demux;
+	mpc_streaminfo si;
+	char * mpc_file, * chap_file;
+	mpc_status err;
+	FILE * test_file;
+
+	if (argc != 3)
+		usage(argv[0]);
+
+	mpc_file = argv[1];
+	chap_file = argv[2];
+
+	err = mpc_reader_init_stdio(&reader, mpc_file);
+	if(err < 0) return !MPC_STATUS_OK;
+
+	demux = mpc_demux_init(&reader);
+	if(!demux) return !MPC_STATUS_OK;
+	mpc_demux_get_info(demux,  &si);
+
+	if (si.stream_version < 8) {
+		fprintf(stderr, "this file cannot be edited, please convert it first to sv8 using mpc2sv8\n");
+		exit(!MPC_STATUS_OK);
+	}
+
+	int chap_nb = mpc_demux_chap_nb(demux);
+
+	test_file = fopen(chap_file, "rb" );
+	if (test_file == 0) {
+		err = dump_chaps(demux, chap_file, chap_nb);
+	} else {
+		fclose(test_file);
+		err = add_chaps(mpc_file, chap_file, demux, &si);
+	}
+
+	mpc_demux_exit(demux);
+	mpc_reader_exit_stdio(&reader);
+	return err;
 }

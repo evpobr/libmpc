@@ -105,12 +105,12 @@ mpc_status add_chaps(char * mpc_file, char * chap_file, mpc_demux * demux, mpc_s
 			addtag(item_key, key_len, item_value, item_len, 0, 0);
 			tag_len += key_len + item_len;
 		}
-		tag_len += 24 + nitem * 9;
-		char block_size[12] = "CT";
+		if (nitem > 0) tag_len += 24 + nitem * 9;
+		char block_header[12] = "CT";
 		char sample_offset[10];
 		int offset_size = encodeSize(chap_pos, sample_offset, MPC_FALSE);
-		tag_len = encodeSize(tag_len + offset_size + 2, block_size + 2, MPC_TRUE);
-		fwrite(block_size, 1, tag_len + 2, in_file);
+		tag_len = encodeSize(tag_len + offset_size + 2, block_header + 2, MPC_TRUE);
+		fwrite(block_header, 1, tag_len + 2, in_file);
 		fwrite(sample_offset, 1, offset_size, in_file);
 		FinalizeTags(in_file, TAG_VERSION, TAG_NO_FOOTER | TAG_NO_PREAMBLE);
 	}
@@ -140,15 +140,17 @@ mpc_status dump_chaps(mpc_demux * demux, char * chap_file, int chap_nb)
 		return !MPC_STATUS_OK;
 
 	for (i = 0; i < chap_nb; i++) {
-		int item_count, j;
 		fprintf(out_file, "[%lli]\n", mpc_demux_chap(demux, i, &tag, &tag_size));
-		item_count = tag[8] | (tag[9] << 8) | (tag[10] << 16) | (tag[11] << 24);
-		tag += 24;
-		for( j = 0; j < item_count; j++){
-			int key_len = strlen(tag + 8);
-			int value_len = tag[0] | (tag[1] << 8) | (tag[2] << 16) | (tag[3] << 24);
-			fprintf(out_file, "%s=%.*s\n", tag + 8, value_len, tag + 9 + key_len);
-			tag += 9 + key_len + value_len;
+		if (tag_size > 0) {
+			int item_count, j;
+			item_count = tag[8] | (tag[9] << 8) | (tag[10] << 16) | (tag[11] << 24);
+			tag += 24;
+			for( j = 0; j < item_count; j++){
+				int key_len = strlen(tag + 8);
+				int value_len = tag[0] | (tag[1] << 8) | (tag[2] << 16) | (tag[3] << 24);
+				fprintf(out_file, "%s=\"%.*s\"\n", tag + 8, value_len, tag + 9 + key_len);
+				tag += 9 + key_len + value_len;
+			}
 		}
 		fprintf(out_file, "\n");
 	}

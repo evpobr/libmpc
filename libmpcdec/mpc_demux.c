@@ -274,11 +274,29 @@ static void mpc_demux_SP(mpc_demux * d, int size, int block_size)
 
 static void mpc_demux_chap_find(mpc_demux * d)
 {
-	if (d->chap_pos == 0) {
-		// FIXME : find chapters from end of file
-	}
 	mpc_block b;
 	int tag_size = 0, chap_size = 0, size, i = 0;
+
+	if (d->si.stream_version < 8)
+		return;
+
+	if (d->chap_pos == 0) {
+		mpc_uint64_t cur_pos = (d->si.header_position + 4) * 8;
+		mpc_demux_seek(d, cur_pos, 11); // seek to the beginning of the stream
+		size = mpc_bits_get_block(&d->bits_reader, &b);
+		while (memcmp(b.key, "SE", 2) != 0) {
+			if (memcmp(b.key, "CT", 2) == 0) {
+				if (d->chap_pos == 0) d->chap_pos = cur_pos;
+			} else
+				d->chap_pos = 0;
+			cur_pos += (size + b.size) * 8;
+			mpc_demux_seek(d, cur_pos, 11);
+			size = mpc_bits_get_block(&d->bits_reader, &b);
+		}
+		if (d->chap_pos == 0)
+			d->chap_pos = cur_pos;
+	}
+
 	d->chap_nb = 0;
 	mpc_demux_seek(d, d->chap_pos, 20);
 	size = mpc_bits_get_block(&d->bits_reader, &b);
@@ -293,21 +311,23 @@ static void mpc_demux_chap_find(mpc_demux * d)
 		size = mpc_bits_get_block(&d->bits_reader, &b);
 	}
 
-	d->chap = malloc(sizeof(mpc_chap_t) * d->chap_nb + tag_size);
-	char * ptag = (char*)(d->chap + d->chap_nb);
+	if (d->chap_nb > 0) {
+		d->chap = malloc(sizeof(mpc_chap_t) * d->chap_nb + tag_size);
+		char * ptag = (char*)(d->chap + d->chap_nb);
 
-	mpc_demux_seek(d, d->chap_pos, 11);
-	size = mpc_bits_get_block(&d->bits_reader, &b);
-	while (memcmp(b.key, "CT", 2) == 0) {
-		mpc_demux_fill(d, 11 + (mpc_uint32_t) b.size, 0);
-		size = mpc_bits_get_size(&d->bits_reader, &d->chap[i].sample);
-		memcpy(ptag, d->bits_reader.buff + ((8 - d->bits_reader.count) >> 3), b.size - size);
-		d->bits_reader.buff += b.size - size;
-		d->chap[i].tag_size = b.size - size;
-		d->chap[i].tag = ptag;
-		ptag += b.size - size;
-		i++;
+		mpc_demux_seek(d, d->chap_pos, 11);
 		size = mpc_bits_get_block(&d->bits_reader, &b);
+		while (memcmp(b.key, "CT", 2) == 0) {
+			mpc_demux_fill(d, 11 + (mpc_uint32_t) b.size, 0);
+			size = mpc_bits_get_size(&d->bits_reader, &d->chap[i].sample);
+			memcpy(ptag, d->bits_reader.buff + ((8 - d->bits_reader.count) >> 3), b.size - size);
+			d->bits_reader.buff += b.size - size;
+			d->chap[i].tag_size = b.size - size;
+			d->chap[i].tag = ptag;
+			ptag += b.size - size;
+			i++;
+			size = mpc_bits_get_block(&d->bits_reader, &b);
+		}
 	}
 	
 	d->bits_reader.buff -= size;
@@ -324,7 +344,7 @@ mpc_uint64_t mpc_demux_chap(mpc_demux * d, int chap_nb, char ** tag, mpc_uint_t 
 {
 	if (d->chap_nb == -1)
 		mpc_demux_chap_find(d);
-	if (chap_nb >= d->chap_nb)
+	if (chap_nb >= d->chap_nb || chap_nb < 0)
 		return 0;
 	if (tag != 0 && tag_size != 0) {
 		*tag = d->chap[chap_nb].tag;

@@ -70,52 +70,67 @@ mpc_decoder * mpc_decoder_init(mpc_streaminfo *si);
 /// Releases input mpc decoder
 void mpc_decoder_exit(mpc_decoder *p_dec);
 
-/// Call this next after calling mpc_decoder_setup.
-/// \param si streaminfo structure indicating format of source stream
-/// \param fast_seeking boolean 0 = use fast seeking if safe, 1 = force fast seeking
-// void mpc_decoder_set_seeking(mpc_decoder *p_dec, mpc_streaminfo *si, mpc_bool_t fast_seeking);
-
 /**
- * set the scf indexes for seeking use
- * needed only for sv7 seeking
- * @param d
+ * Sets decoder sample scaling factor.  All decoded samples will be multiplied
+ * by this factor. Useful for applying replay gain.
+ * @param scale_factor multiplicative scaling factor
  */
-void mpc_decoder_reset_scf(mpc_decoder * d, int value);
-
-/// Sets decoder sample scaling factor.  All decoded samples will be multiplied
-/// by this factor.
-/// \param scale_factor multiplicative scaling factor
 void mpc_decoder_scale_output(mpc_decoder *p_dec, double scale_factor);
 
-void mpc_set_replay_level(mpc_demux * d, float level, mpc_bool_t use_gain,
-						  mpc_bool_t use_title, mpc_bool_t clip_prevention);
-
-/// Actually reads data from previously initialized stream.  Call
-/// this iteratively to decode the mpc stream.
-/// \param buffer destination buffer for decoded samples
-/// \param vbr_update_acc \todo document me
-/// \param vbr_update_bits \todo document me
-/// \return -1 if an error is encountered
-/// \return 0 if the stream has been completely decoded successfully and there are no more samples
-/// \return > 0 to indicate the number of bytes that were actually read from the stream.
 void mpc_decoder_decode_frame(mpc_decoder * d, mpc_bits_reader * r, mpc_frame_info * i);
 
-// init demuxer
-mpc_demux * mpc_demux_init(mpc_reader * p_reader);
-// free demuxer
-void mpc_demux_exit(mpc_demux * d);
-// decode frame
-mpc_status mpc_demux_decode(mpc_demux * d, mpc_frame_info * i);
-// get streaminfo
-void mpc_demux_get_info(mpc_demux * d, mpc_streaminfo * i);
-// seek
-mpc_status mpc_demux_seek_sample(mpc_demux * d, mpc_uint64_t destsample);
-mpc_status mpc_demux_seek_second(mpc_demux * d, double seconds);
-mpc_seek_t mpc_demux_pos(mpc_demux * d);
-// chapters
-mpc_int_t mpc_demux_chap_nb(mpc_demux * d);
-mpc_uint64_t mpc_demux_chap(mpc_demux * d, int chap_nb, char ** tag, mpc_uint_t * tag_size);
+// This is the gain reference used in old replaygain
+#define MPC_OLD_GAIN_REF 64.82
 
+/**
+ * init demuxer
+ * @param p_reader initialized mpc_reader pointer
+ * @return an initialized mpc_demux pointer
+ */
+mpc_demux * mpc_demux_init(mpc_reader * p_reader);
+/// free demuxer
+void mpc_demux_exit(mpc_demux * d);
+/**
+ * Calls mpc_decoder_scale_output to set the scaling factor according to the
+ * replay gain stream information and the supplied ouput level
+ * @param d pointer to a musepack demuxer
+ * @param level the desired ouput level (in db). Must be MPC_OLD_GAIN_REF (64.82 db) if you want to get the old replaygain behavior
+ * @param use_gain set it to MPC_TRUE if you want to set the scaling factor according to the stream gain
+ * @param use_title MPC_TRUE : uses the title gain, MPC_FALSE : uses the album gain
+ * @param clip_prevention MPC_TRUE : uses cliping prevention
+ */
+void mpc_set_replay_level(mpc_demux * d, float level, mpc_bool_t use_gain,
+                          mpc_bool_t use_title, mpc_bool_t clip_prevention);
+/// decode frame
+mpc_status mpc_demux_decode(mpc_demux * d, mpc_frame_info * i);
+/// get streaminfo
+void mpc_demux_get_info(mpc_demux * d, mpc_streaminfo * i);
+/// seeks to a given sample
+mpc_status mpc_demux_seek_sample(mpc_demux * d, mpc_uint64_t destsample);
+/// seeks to a given second
+mpc_status mpc_demux_seek_second(mpc_demux * d, double seconds);
+
+/// \return the current position in the stream (in bits) from the beginning of the file
+mpc_seek_t mpc_demux_pos(mpc_demux * d);
+
+/// chapters : only for sv8 streams
+/**
+ * Gets the number of chapters in the stream
+ * @param d pointer to a musepack demuxer
+ * @return the number of chapters found in the stream
+ */
+mpc_int_t mpc_demux_chap_nb(mpc_demux * d);
+/**
+ * Gets datas associated to a given chapter
+ * You can pass 0 for tag and tag_size if you don't needs the tag information
+ * The chapter tag is an APEv2 tag without the preamble
+ * @param d pointer to a musepack demuxer
+ * @param chap_nb chapter number you want datas (from 0 to mpc_demux_chap_nb(d) - 1)
+ * @param tag will return a pointer to the chapter tag datas
+ * @param tag_size will be filed with the tag data size (0 if no tag for this chapter)
+ * @return the sample where the chapter starts
+ */
+mpc_uint64_t mpc_demux_chap(mpc_demux * d, int chap_nb, char ** tag, mpc_uint_t * tag_size);
 
 #ifdef __cplusplus
 }

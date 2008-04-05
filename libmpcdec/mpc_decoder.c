@@ -77,12 +77,6 @@ void mpc_decoder_read_bitstream_sv8(mpc_decoder * d, mpc_bits_reader * r,
 									mpc_bool_t is_key_frame);
 static void mpc_decoder_requantisierung(mpc_decoder *d);
 
-// static void mpc_decoder_reset_y(mpc_decoder *d)
-// {
-// 	memset(d->Y_L, 0, sizeof d->Y_L);
-// 	memset(d->Y_R, 0, sizeof d->Y_R);
-// }
-
 /**
  * set the scf indexes for seeking use
  * needed only for sv7 seeking

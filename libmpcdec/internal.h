@@ -66,9 +66,9 @@ struct mpc_bits_reader_t {
 #define DEMUX_BUFFER_SIZE (65536 - MAX_FRAME_SIZE) // need some space as sand box
 
 typedef struct {
-	mpc_uint64_t sample;
-	mpc_uint_t tag_size;
-	char * tag;
+	mpc_uint64_t sample; /// sample where the chapter starts
+	mpc_uint_t tag_size; /// size of the tag element (0 if no tag is present for this chapter)
+	char * tag; /// pointer to an APEv2 tag without the preamble
 } mpc_chap_t;
 
 struct mpc_demux_t {
@@ -92,7 +92,7 @@ struct mpc_demux_t {
 	mpc_seek_t chap_pos; /// supposed position of the first chapter block
 	mpc_int_t chap_nb; /// number of chapters (-1 if unknown, 0 if no chapter)
 	mpc_chap_t * chap; /// chapters position and tag
-	
+
 };
 
 /// helper functions used by multiple files

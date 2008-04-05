@@ -81,8 +81,39 @@ int iniparser_getnsec(dictionary * d);
 char * iniparser_getsecname(dictionary * d, int n);
 
 
+/*-------------------------------------------------------------------------*/
+/**
+@brief    Get number of keys for section n in a dictionary.
+@param    d   Dictionary to examine
+@param    n   Section number (from 0 to nsec-1).
+@return   Number of keys in section
 
+  This function locates the n-th section in a dictionary and returns
+  the number of keys in this section.
+
+  This function returns -1 in case of error.
+ */
+/*--------------------------------------------------------------------------*/
 int iniparser_getnkey(dictionary * d, int nsec);
+
+
+/*-------------------------------------------------------------------------*/
+/**
+@brief    Get key and string for key nkey in section nsec in a dictionary.
+@param    d   Dictionary to examine
+@param    nsec   Section number.
+@param    nkey   Key number.
+@param    string   Pointer where the string will be returned.
+@return   Pointer to char string
+
+  This function locates the nkey-th key in the nsec-th section in a dictionary
+  and returns the key name and the key string as a pointer to strings
+  statically allocated inside the dictionary.
+  Do not free or modify the returned strings!
+
+  This function returns NULL in case of error.
+ */
+/*--------------------------------------------------------------------------*/
 char * iniparser_getkeyname(dictionary * d, int nsec, int nkey, char ** string);
 
 

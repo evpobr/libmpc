@@ -49,6 +49,8 @@ mpc_status streaminfo_read_header_sv7(mpc_streaminfo* si, mpc_bits_reader * r_in
 void  streaminfo_encoder_info(mpc_streaminfo* si, const mpc_bits_reader * r_in);
 void  streaminfo_gain(mpc_streaminfo* si, const mpc_bits_reader * r_in);
 
+// mpc_decoder.c
+void mpc_decoder_reset_scf(mpc_decoder * d, int value);
 
 enum {
 	MPC_BUFFER_SWAP = 1,
@@ -136,7 +138,8 @@ mpc_demux_seek(mpc_demux * d, mpc_seek_t fpos, mpc_uint32_t min_bytes) {
 }
 
 /**
- * return the current position in the stream (in bits)
+ * return the current position in the stream (in bits) from the beginning
+ * of the file
  * @param d demuxer context
  * @return current stream position in bits
  */
@@ -329,10 +332,15 @@ static void mpc_demux_chap_find(mpc_demux * d)
 			size = mpc_bits_get_block(&d->bits_reader, &b);
 		}
 	}
-	
+
 	d->bits_reader.buff -= size;
 }
 
+/**
+ * Gets the number of chapters in the stream
+ * @param d pointer to a musepack demuxer
+ * @return the number of chapters found in the stream
+ */
 mpc_int_t mpc_demux_chap_nb(mpc_demux * d)
 {
 	if (d->chap_nb == -1)
@@ -340,6 +348,16 @@ mpc_int_t mpc_demux_chap_nb(mpc_demux * d)
 	return d->chap_nb;
 }
 
+/**
+ * Gets datas associated to a given chapter
+ * You can pass 0 for tag and tag_size if you don't needs the tag information
+ * The chapter tag is an APEv2 tag without the preamble
+ * @param d pointer to a musepack demuxer
+ * @param chap_nb chapter number you want datas (from 0 to mpc_demux_chap_nb(d) - 1)
+ * @param tag will return a pointer to the chapter tag datas
+ * @param tag_size will be filed with the tag data size (0 if no tag for this chapter)
+ * @return the sample where the chapter starts
+ */
 mpc_uint64_t mpc_demux_chap(mpc_demux * d, int chap_nb, char ** tag, mpc_uint_t * tag_size)
 {
 	if (d->chap_nb == -1)
@@ -352,7 +370,7 @@ mpc_uint64_t mpc_demux_chap(mpc_demux * d, int chap_nb, char ** tag, mpc_uint_t 
 	}
 	return d->chap[chap_nb].sample;
 }
-		
+
 static mpc_status mpc_demux_header(mpc_demux * d)
 {
 	char magic[4];

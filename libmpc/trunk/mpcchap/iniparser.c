@@ -82,9 +82,9 @@ static char * strstrip(char * s)
 {
     static char l[ASCIILINESZ+1];
 	char * last ;
-	
+
     if (s==NULL) return NULL ;
-    
+
 	while (isspace((int)*s) && *s) s++;
 	memset(l, 0, ASCIILINESZ+1);
 	strcpy(l, s);
@@ -169,7 +169,20 @@ char * iniparser_getsecname(dictionary * d, int n)
     return d->key[i] ;
 }
 
-int iniparser_getnkey(dictionary * d, int nsec)
+/*-------------------------------------------------------------------------*/
+/**
+  @brief    Get number of keys for section n in a dictionary.
+  @param    d   Dictionary to examine
+  @param    n   Section number (from 0 to nsec-1).
+  @return   Number of keys in section
+
+  This function locates the n-th section in a dictionary and returns
+  the number of keys in this section.
+
+  This function returns -1 in case of error.
+ */
+/*--------------------------------------------------------------------------*/
+int iniparser_getnkey(dictionary * d, int n)
 {
 	int i, i_sec, cnt = 0 ;
 
@@ -178,16 +191,33 @@ int iniparser_getnkey(dictionary * d, int nsec)
 		if (d->key[i]==NULL)
 			continue ;
 		if (strchr(d->key[i], ':')==NULL) {
-			if (nsec == -1)
+			if (n == -1)
 				break;
-			nsec -- ;
+			n -- ;
 		}
-		if (nsec == -1)
+		if (n == -1)
 			cnt ++;
 	}
 	return (cnt - 1);
 }
 
+/*-------------------------------------------------------------------------*/
+/**
+  @brief    Get key and string for key nkey in section nsec in a dictionary.
+  @param    d   Dictionary to examine
+  @param    nsec   Section number.
+  @param    nkey   Key number.
+  @param    string   Pointer where the string will be returned.
+  @return   Pointer to char string
+
+  This function locates the nkey-th key in the nsec-th section in a dictionary
+  and returns the key name and the key string as a pointer to strings
+  statically allocated inside the dictionary.
+  Do not free or modify the returned strings!
+
+  This function returns NULL in case of error.
+ */
+/*--------------------------------------------------------------------------*/
 char * iniparser_getkeyname(dictionary * d, int nsec, int nkey, char ** string)
 {
 	int i, keylen;
@@ -211,7 +241,7 @@ char * iniparser_getkeyname(dictionary * d, int nsec, int nkey, char ** string)
 			break;
 		nkey--;
 	}
-	
+
 	*string = d->val[i];
 	return d->key[i] + keylen;
 }
@@ -504,7 +534,7 @@ static line_status iniparser_line(
     char * section,
     char * key,
     char * value)
-{   
+{
     line_status sta ;
     char        line[ASCIILINESZ+1];
     int         len ;
@@ -518,7 +548,7 @@ static line_status iniparser_line(
         sta = LINE_EMPTY ;
     } else if (line[0]=='#' || line[0]==';') {
         /* Comment line */
-        sta = LINE_COMMENT ; 
+        sta = LINE_COMMENT ;
     } else if (line[0]=='[' && line[len-1]==']') {
         /* Section name */
         sscanf(line, "[%[^]]", section);

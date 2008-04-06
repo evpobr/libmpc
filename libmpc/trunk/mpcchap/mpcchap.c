@@ -2,34 +2,19 @@
   Copyright (c) 2008, The Musepack Development Team
   All rights reserved.
 
-  Redistribution and use in source and binary forms, with or without
-  modification, are permitted provided that the following conditions are
-  met:
+  This program is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License
+  as published by the Free Software Foundation; either version 2
+  of the License, or (at your option) any later version.
 
-  * Redistributions of source code must retain the above copyright
-  notice, this list of conditions and the following disclaimer.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-  * Redistributions in binary form must reproduce the above
-  copyright notice, this list of conditions and the following
-  disclaimer in the documentation and/or other materials provided
-  with the distribution.
-
-  * Neither the name of the The Musepack Development Team nor the
-  names of its contributors may be used to endorse or promote
-  products derived from this software without specific prior
-  written permission.
-
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 #include <mpc/mpcdec.h>
@@ -38,6 +23,8 @@
 #include "iniparser.h"
 
 #include <sys/stat.h>
+
+#include <src/lib/cuefile.h>
 
 // tags.c
 void    Init_Tags        ( void );
@@ -55,7 +42,7 @@ int     addtag           ( const char* key, size_t keylen, const char* value, si
 static void usage(const char *exename)
 {
 	printf(
-	        "Usage: %s <infile.mpc> <chapterfile.ini>\n"
+	        "Usage: %s <infile.mpc> <chapterfile.ini / cuefile>\n"
 	        "   if chapterfile.ini exists, chapter tags in infile.mpc will be\n"
 	        "   replaced by those from chapterfile.ini, else chapters will be\n"
 	        "   dumped to chapterfile.ini\n"
@@ -68,7 +55,7 @@ static void usage(const char *exename)
 	        , exename);
 }
 
-mpc_status add_chaps(char * mpc_file, char * chap_file, mpc_demux * demux, mpc_streaminfo * si)
+mpc_status add_chaps_ini(char * mpc_file, char * chap_file, mpc_demux * demux, mpc_streaminfo * si)
 {
 	struct stat stbuf;
 	FILE * in_file;
@@ -121,6 +108,91 @@ mpc_status add_chaps(char * mpc_file, char * chap_file, mpc_demux * demux, mpc_s
 	fclose(in_file);
 	free(tmp_buff);
 	iniparser_freedict(dict);
+
+	return MPC_STATUS_OK;
+}
+
+mpc_status add_chaps_cue(char * mpc_file, char * chap_file, mpc_demux * demux, mpc_streaminfo * si)
+{
+	int Ptis[7] = {	PTI_TITLE, PTI_PERFORMER, PTI_SONGWRITER, PTI_COMPOSER,
+			PTI_ARRANGER, PTI_MESSAGE, PTI_GENRE};
+	char * APE_keys[7] = {"Title", "Artist", "Songwriter", "Composer",
+			"Arranger", "Comment", "Genre"};
+
+	Cd *cd = 0;
+	int nchap, format = UNKNOWN;
+	struct stat stbuf;
+	FILE * in_file;
+	int chap_pos, end_pos, chap_size, i;
+
+	if (0 == (cd = cf_parse(chap_file, &format))) {
+		fprintf(stderr, "%s: input file error\n", chap_file);
+		return !MPC_STATUS_OK;
+	}
+
+	chap_pos = (demux->chap_pos >> 3) + si->header_position;
+	end_pos = mpc_demux_pos(demux) >> 3;
+	chap_size = end_pos - chap_pos;
+
+	stat(mpc_file, &stbuf);
+	char * tmp_buff = malloc(stbuf.st_size - chap_pos - chap_size);
+	in_file = fopen( mpc_file, "r+b" );
+	fseek(in_file, chap_pos + chap_size, SEEK_SET);
+	fread(tmp_buff, 1, stbuf.st_size - chap_pos - chap_size, in_file);
+	fseek(in_file, chap_pos, SEEK_SET);
+
+	nchap = cd_get_ntrack(cd);
+	for (i = 1; i <= nchap; i++) {
+		int j, nitem = 0, tag_len = 0, key_len, item_len;
+		Track * track;
+		Cdtext *cdtext;
+
+		track = cd_get_track (cd, i);
+		cdtext = track_get_cdtext(track);
+
+		// position du chapitre
+		mpc_int64_t chap_pos = si->sample_freq * track_get_start (track) / 75;
+
+		if (chap_pos > si->samples - si->beg_silence)
+			fprintf(stderr, "warning : chapter %i starts @ %lli after the end of the stream (%lli)\n", i, chap_pos, si->samples - si->beg_silence);
+
+		Init_Tags();
+
+		char track_buf[16];
+		sprintf(track_buf, "%i/%i", i, nchap);
+		key_len = 5;
+		item_len = strlen(track_buf);
+		addtag("Track", key_len, track_buf, item_len, 0, 0);
+		tag_len += key_len + item_len;
+		nitem++;
+
+		for (j = 0; j < (sizeof(Ptis) / sizeof(*Ptis)); j++) {
+			char * item_key = APE_keys[j], * item_value;
+			item_value = cdtext_get (Ptis[j], cdtext);
+			if (item_value != 0) {
+				key_len = strlen(item_key);
+				item_len = strlen(item_value);
+				addtag(item_key, key_len, item_value, item_len, 0, 0);
+				tag_len += key_len + item_len;
+				nitem++;
+			}
+		}
+
+		tag_len += 24 + nitem * 9;
+		char block_header[12] = "CT";
+		char sample_offset[10];
+		int offset_size = encodeSize(chap_pos, sample_offset, MPC_FALSE);
+		tag_len = encodeSize(tag_len + offset_size + 2, block_header + 2, MPC_TRUE);
+		fwrite(block_header, 1, tag_len + 2, in_file);
+		fwrite(sample_offset, 1, offset_size, in_file);
+		FinalizeTags(in_file, TAG_VERSION, TAG_NO_FOOTER | TAG_NO_PREAMBLE);
+	}
+
+	fwrite(tmp_buff, 1, stbuf.st_size - chap_pos - chap_size, in_file);
+	ftruncate(fileno(in_file), ftell(in_file));
+
+	fclose(in_file);
+	free(tmp_buff);
 
 	return MPC_STATUS_OK;
 }
@@ -193,8 +265,15 @@ int main(int argc, char **argv)
 	if (test_file == 0) {
 		err = dump_chaps(demux, chap_file, chap_nb);
 	} else {
+		int len;
 		fclose(test_file);
-		err = add_chaps(mpc_file, chap_file, demux, &si);
+		len = strlen(chap_file);
+		if (strcasecmp(chap_file + len - 4, ".cue") == 0 || strcasecmp(chap_file + len - 4, ".toc") == 0)
+			err = add_chaps_cue(mpc_file, chap_file, demux, &si);
+		else if (strcasecmp(chap_file + len - 4, ".ini") == 0)
+			err = add_chaps_ini(mpc_file, chap_file, demux, &si);
+		else
+			err = !MPC_STATUS_OK;
 	}
 
 	mpc_demux_exit(demux);

@@ -128,6 +128,8 @@ enum {
 
 #ifdef __GNUC__
 # define MPC_API __attribute__ ((visibility("default")))
+#else
+# define MPC_API
 #endif
 
 #ifdef __cplusplus

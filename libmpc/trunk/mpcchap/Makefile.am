@@ -1,6 +1,6 @@
 bin_PROGRAMS = mpcchap
 
-common_sources = ../common/tags.c
+common_sources = ../common/tags.c ../common/crc32.c
 
 INCLUDES = -I$(top_srcdir)/include -I/home/nico/src/cuetools-1.3.1/
 METASOURCES = AUTO

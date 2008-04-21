@@ -78,19 +78,19 @@ struct mpc_reader_t {
 ///
 /// \param r p_reader handle to initialize
 /// \param filename input filename to attach to the reader
-mpc_status mpc_reader_init_stdio(mpc_reader *p_reader, const char *filename);
+MPC_API mpc_status mpc_reader_init_stdio(mpc_reader *p_reader, const char *filename);
 
 /// Initializes reader with default stdio file reader implementation.  Use
 /// this if you prefer to open the file yourself.
 ///
 /// \param r p_reader handle to initialize
 /// \param p_file input file handle (already open)
-mpc_status mpc_reader_init_stdio_stream(mpc_reader * p_reader, FILE * p_file);
+MPC_API mpc_status mpc_reader_init_stdio_stream(mpc_reader * p_reader, FILE * p_file);
 
 /// Release reader with default stdio file reader implementation.
 ///
 /// \param r reader handle to release
-void mpc_reader_exit_stdio(mpc_reader *p_reader);
+MPC_API void mpc_reader_exit_stdio(mpc_reader *p_reader);
 
 #ifdef __cplusplus
 }

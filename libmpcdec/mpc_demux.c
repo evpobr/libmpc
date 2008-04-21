@@ -156,7 +156,7 @@ mpc_seek_t mpc_demux_pos(mpc_demux * d)
  * @return size of tag, in bytes
  * @return MPC_STATUS_FILE on errors of any kind
  */
-mpc_int32_t mpc_demux_skip_id3v2(mpc_demux * d)
+static mpc_int32_t mpc_demux_skip_id3v2(mpc_demux * d)
 {
 	mpc_uint8_t  tmp [4];
 	mpc_bool_t footerPresent;     // ID3v2.4-flag
@@ -202,7 +202,7 @@ mpc_int32_t mpc_demux_skip_id3v2(mpc_demux * d)
 	return size + 10;
 }
 
-mpc_status mpc_demux_seek_init(mpc_demux * d)
+static mpc_status mpc_demux_seek_init(mpc_demux * d)
 {
 	if (d->seek_table != 0)
 		return MPC_STATUS_OK;

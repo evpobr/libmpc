@@ -126,6 +126,10 @@ enum {
 # define mpc_cdecl
 #endif
 
+#ifdef __GNUC__
+# define MPC_API __attribute__ ((visibility("default")))
+#endif
+
 #ifdef __cplusplus
 }
 #endif

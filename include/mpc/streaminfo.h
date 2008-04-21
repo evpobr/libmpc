@@ -39,7 +39,6 @@
 #endif
 
 #include <mpc/mpc_types.h>
-#include "reader.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -98,11 +97,11 @@ typedef struct mpc_streaminfo {
 
 /// Gets length of stream si, in seconds.
 /// \return length of stream in seconds
-double mpc_streaminfo_get_length(mpc_streaminfo *si);
+MPC_API double mpc_streaminfo_get_length(mpc_streaminfo *si);
 
 /// Returns length of stream si, in samples.
 /// \return length of stream in samples
-mpc_int64_t mpc_streaminfo_get_length_samples(mpc_streaminfo *si);
+MPC_API mpc_int64_t mpc_streaminfo_get_length_samples(mpc_streaminfo *si);
 
 #ifdef __cplusplus
 }

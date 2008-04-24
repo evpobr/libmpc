@@ -56,12 +56,6 @@ typedef struct mpc_block_t {
 	mpc_uint64_t size;	// block size minus the block header size
 } mpc_block;
 
-// mpc_bits_reader.c
-struct mpc_bits_reader_t {
-	unsigned char * buff; /// pointer on current byte
-	unsigned int count; /// unread bits in current byte
-};
-
 #define MAX_FRAME_SIZE 4352
 #define DEMUX_BUFFER_SIZE (65536 - MAX_FRAME_SIZE) // need some space as sand box
 

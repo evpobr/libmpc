@@ -53,8 +53,12 @@ enum {
 };
 
 typedef struct mpc_decoder_t mpc_decoder;
-typedef struct mpc_bits_reader_t mpc_bits_reader;
 typedef struct mpc_demux_t mpc_demux;
+
+typedef struct mpc_bits_reader_t {
+	unsigned char * buff; /// pointer on current byte
+	unsigned int count; /// unread bits in current byte
+} mpc_bits_reader;
 
 typedef struct mpc_frame_info_t {
 	mpc_uint32_t samples;	/// number of samples in the frame (counting once for multiple channels)

@@ -95,7 +95,7 @@ int main(int argc, char **argv)
 		if(!demux) return !MPC_STATUS_OK;
 		mpc_demux_get_info(demux,  &si);
 
-		if (j == 1) InitGainAnalysis ( si.sample_freq );
+		if (j == 1) gain_init_analysis ( si.sample_freq );
 
 		while(1) {
 			mpc_frame_info frame;
@@ -112,10 +112,10 @@ int main(int argc, char **argv)
 				title_max = maxf(title_max, sample_buffer[2 * i + 1]);
 			}
 
-			AnalyzeSamples(left_samples, right_samples, frame.samples, si.channels);
+			gain_analyze_samples(left_samples, right_samples, frame.samples, si.channels);
 		}
 
-		title_gain[j-1] = (mpc_uint16_t) (GetTitleGain() * 256);
+		title_gain[j-1] = (mpc_uint16_t) (gain_get_title() * 256);
 		title_peak[j-1] = (mpc_uint16_t) (log10(title_max * (1 << 15)) * 20 * 256);
 		header_pos[j-1] = si.header_position + 4;
 
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
 		mpc_reader_exit_stdio(&reader);
 	}
 
-	album_gain = (mpc_uint16_t) (GetAlbumGain() * 256);
+	album_gain = (mpc_uint16_t) (gain_get_album() * 256);
 	album_peak = (mpc_uint16_t) (log10(album_max * (1 << 15)) * 20 * 256);
 
 	for( j = 0; j < argc - 1; j++) {

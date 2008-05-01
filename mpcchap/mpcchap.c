@@ -151,7 +151,7 @@ mpc_status add_chaps_cue(char * mpc_file, char * chap_file, mpc_demux * demux, m
 		cdtext = track_get_cdtext(track);
 
 		// position du chapitre
-		mpc_int64_t chap_pos = si->sample_freq * track_get_start (track) / 75;
+		mpc_int64_t chap_pos = (mpc_int64_t) si->sample_freq * track_get_start (track) / 75;
 
 		if (chap_pos > si->samples - si->beg_silence)
 			fprintf(stderr, "warning : chapter %i starts @ %lli after the end of the stream (%lli)\n", i, chap_pos, si->samples - si->beg_silence);

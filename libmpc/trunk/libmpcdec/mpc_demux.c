@@ -315,8 +315,9 @@ static void mpc_demux_chap_find(mpc_demux * d)
 	}
 
 	if (d->chap_nb > 0) {
+		char * ptag;
 		d->chap = malloc(sizeof(mpc_chap_t) * d->chap_nb + tag_size);
-		char * ptag = (char*)(d->chap + d->chap_nb);
+		ptag = (char*)(d->chap + d->chap_nb);
 
 		mpc_demux_seek(d, d->chap_pos, 11);
 		size = mpc_bits_get_block(&d->bits_reader, &b);

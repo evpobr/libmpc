@@ -41,6 +41,10 @@
 #include "huffman.h"
 #include "mpc_bits_reader.h"
 
+/// maximum number of seek points in the table. The distance between points will
+/// be adapted so this value is never exceeded.
+#define MAX_SEEK_TABLE_SIZE	65536
+
 // streaminfo.c
 mpc_status streaminfo_read_header_sv8(mpc_streaminfo* si,
 									  const mpc_bits_reader * r_in,
@@ -204,13 +208,19 @@ static mpc_int32_t mpc_demux_skip_id3v2(mpc_demux * d)
 
 static mpc_status mpc_demux_seek_init(mpc_demux * d)
 {
+	size_t seek_table_size;
 	if (d->seek_table != 0)
 		return MPC_STATUS_OK;
 
 	d->seek_pwr = 6;
 	if (d->si.block_pwr > d->seek_pwr)
 		d->seek_pwr = d->si.block_pwr;
-	d->seek_table = malloc((size_t)(2 + d->si.samples / (MPC_FRAME_LENGTH << d->seek_pwr)) * sizeof(mpc_seek_t));
+	seek_table_size = (2 + d->si.samples / (MPC_FRAME_LENGTH << d->seek_pwr));
+	while (seek_table_size > MAX_SEEK_TABLE_SIZE) {
+		d->seek_pwr++;
+		seek_table_size = (2 + d->si.samples / (MPC_FRAME_LENGTH << d->seek_pwr));
+	}
+	d->seek_table = malloc((size_t)(seek_table_size * sizeof(mpc_seek_t)));
 	if (d->seek_table == 0)
 		return MPC_STATUS_FILE;
 	d->seek_table[0] = (mpc_seek_t)mpc_demux_pos(d);
@@ -222,36 +232,49 @@ static mpc_status mpc_demux_seek_init(mpc_demux * d)
 static void mpc_demux_ST(mpc_demux * d)
 {
 	mpc_uint64_t tmp;
-	mpc_seek_t * table;
+	mpc_seek_t * table, last[2];
 	mpc_bits_reader r = d->bits_reader;
-	mpc_uint_t i;
+	mpc_uint_t i, diff_pwr = 0, mask;
+	mpc_uint32_t file_table_size;
 
 	if (d->seek_table != 0)
 		return;
 
 	mpc_bits_get_size(&r, &tmp);
-	d->seek_table_size = (mpc_seek_t) tmp;
+	file_table_size = (mpc_seek_t) tmp;
 	d->seek_pwr = d->si.block_pwr + mpc_bits_read(&r, 4);
+
 	tmp = 2 + d->si.samples / (MPC_FRAME_LENGTH << d->seek_pwr);
-	if (tmp < d->seek_table_size) tmp = d->seek_table_size;
-	d->seek_table = malloc((size_t)(tmp * sizeof(mpc_seek_t)));
+	while (tmp > MAX_SEEK_TABLE_SIZE) {
+		d->seek_pwr++;
+		diff_pwr++;
+		tmp = 2 + d->si.samples / (MPC_FRAME_LENGTH << d->seek_pwr);
+	}
+	if ((file_table_size >> diff_pwr) > tmp)
+		file_table_size = tmp << diff_pwr;
+	d->seek_table = malloc((size_t) (tmp * sizeof(mpc_seek_t)));
+	d->seek_table_size = (file_table_size + ((1 << diff_pwr) - 1)) >> diff_pwr;
 
 	table = d->seek_table;
 	mpc_bits_get_size(&r, &tmp);
-	table[0] = (mpc_seek_t) (tmp + d->si.header_position) * 8;
+	table[0] = last[0] = (mpc_seek_t) (tmp + d->si.header_position) * 8;
 
 	if (d->seek_table_size == 1)
 		return;
 
 	mpc_bits_get_size(&r, &tmp);
-	table[1] = (mpc_seek_t) (tmp + d->si.header_position) * 8;
+	last[1] = (mpc_seek_t) (tmp + d->si.header_position) * 8;
+	if (diff_pwr == 0) table[1] = last[1];
 
-	for (i = 2; i < d->seek_table_size; i++) {
+	mask = (1 << diff_pwr) - 1;
+	for (i = 2; i < file_table_size; i++) {
 		int code = mpc_bits_golomb_dec(&r, 12);
 		if (code & 1)
 			code = -(code & (-1 << 1));
 		code <<= 2;
-		table[i] = code + 2 * table[i-1] - table[i-2];
+		last[i & 1] = code + 2 * last[(i-1) & 1] - last[i & 1];
+		if ((i & mask) == 0)
+			table[i >> diff_pwr] = last[i & 1];
 	}
 }
 

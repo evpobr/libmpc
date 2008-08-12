@@ -2,8 +2,9 @@ bin_PROGRAMS = mpcchap
 
 common_sources = ../common/tags.c ../common/crc32.c
 
-INCLUDES = -I$(top_srcdir)/include -I/home/nico/src/cuetools-1.3.1/
+INCLUDES = -I$(top_srcdir)/include
 METASOURCES = AUTO
 mpcchap_SOURCES = dictionary.c iniparser.c mpcchap.c $(common_sources)
 mpcchap_LDADD = $(top_builddir)/libmpcdec/libmpcdec.la \
-	$(top_builddir)/libmpcenc/libmpcenc.a /home/nico/src/cuetools-1.3.1/src/lib/libcuefile.a -lm
+	$(top_builddir)/libmpcenc/libmpcenc.a \
+	-lm -lcuefile

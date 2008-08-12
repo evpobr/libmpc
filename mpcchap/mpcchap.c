@@ -24,7 +24,7 @@
 
 #include <sys/stat.h>
 
-#include <src/lib/cuefile.h>
+#include <cuetools/cuefile.h>
 
 // tags.c
 void    Init_Tags        ( void );

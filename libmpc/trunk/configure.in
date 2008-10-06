@@ -10,6 +10,19 @@ AM_PROG_LIBTOOL
 
 AC_CHECK_HEADERS(replaygain/gain_analysis.h)
 
+AC_CANONICAL_HOST()
+case $host_os in
+	*mingw32* )
+		LDFLAGS="${LDFLAGS} -mwindows"
+		EXTRALIBS="-lwinmm"
+		;;
+	* )
+		EXTRALIBS=""
+		;;
+esac
+
+AC_SUBST([EXTRALIBS])
+
 AC_OUTPUT(Makefile include/Makefile libmpcdec/Makefile libmpcenc/Makefile \
 	libmpcpsy/Makefile libwavformat/Makefile mpc2sv8/Makefile mpcchap/Makefile mpccut/Makefile \
 	mpcdec/Makefile mpcenc/Makefile mpcgain/Makefile wavcmp/Makefile)

@@ -8,3 +8,5 @@ mpcchap_SOURCES = dictionary.c iniparser.c mpcchap.c $(common_sources)
 mpcchap_LDADD = $(top_builddir)/libmpcdec/libmpcdec.la \
 	$(top_builddir)/libmpcenc/libmpcenc.a \
 	-lm -lcuefile
+
+noinst_HEADERS = dictionary.h iniparser.h

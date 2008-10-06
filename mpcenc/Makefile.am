@@ -10,10 +10,12 @@ INCLUDES = -I$(top_srcdir)/libmpcenc -I$(top_srcdir)/libmpcpsy \
 	-I$(top_srcdir)/include/ $(all_includes)
 
 # the library search path.
-mpcenc_LDFLAGS = $(all_libraries) 
+mpcenc_LDFLAGS = $(all_libraries)
 mpcenc_SOURCES = keyboard.c mpcenc.c pipeopen.c stderr.c wave_in.c winmsg.c \
 	$(common_sources)
 mpcenc_LDADD = -lm \
 	$(top_builddir)/libmpcpsy/libmpcpsy.a \
 	$(top_builddir)/libmpcenc/libmpcenc.a
 AM_CFLAGS = -DTRUE=1 -DFALSE=0
+
+noinst_HEADERS = mpcenc.h predict.h config.h

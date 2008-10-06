@@ -11,5 +11,5 @@ libmpcdec_la_SOURCES = huffman.c mpc_decoder.c mpc_reader.c \
 
 libmpcdec_la_LDFLAGS = -no-undefined -version-info 6:0:0
 
-noinst_HEADERS = mpc_bits_reader.h
+noinst_HEADERS = mpc_bits_reader.h huffman.h decoder.h internal.h requant.h mpcdec_math.h
 AM_CFLAGS = -fpic -fvisibility=hidden

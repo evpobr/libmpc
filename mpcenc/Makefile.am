@@ -14,6 +14,7 @@ mpcenc_LDFLAGS = $(all_libraries)
 mpcenc_SOURCES = keyboard.c mpcenc.c pipeopen.c stderr.c wave_in.c winmsg.c \
 	$(common_sources)
 mpcenc_LDADD = -lm \
+	$(EXTRALIBS) \
 	$(top_builddir)/libmpcpsy/libmpcpsy.a \
 	$(top_builddir)/libmpcenc/libmpcenc.a
 AM_CFLAGS = -DTRUE=1 -DFALSE=0

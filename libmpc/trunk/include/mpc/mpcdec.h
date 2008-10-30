@@ -61,11 +61,19 @@ typedef struct mpc_bits_reader_t {
 } mpc_bits_reader;
 
 typedef struct mpc_frame_info_t {
-	mpc_uint32_t samples;	/// number of samples in the frame (counting once for multiple channels)
-	mpc_int32_t bits;	/// number of bits consumed by this frame (-1) if end of stream
+	mpc_uint32_t samples;		/// number of samples in the frame (counting once for multiple channels)
+	mpc_int32_t bits;			/// number of bits consumed by this frame (-1) if end of stream
 	MPC_SAMPLE_FORMAT * buffer;	/// frame samples buffer (size = samples * channels * sizeof(MPC_SAMPLE_FORMAT))
-	mpc_bool_t is_key_frame; /// 1 if this frame is a key frame (first in block) 0 else. Set by the demuxer.
+	mpc_bool_t is_key_frame; 	/// 1 if this frame is a key frame (first in block) 0 else. Set by the demuxer.
 } mpc_frame_info;
+
+typedef struct mpc_chap_info_t {
+	mpc_uint64_t sample;	/// sample where the chapter starts
+	mpc_uint16_t gain;		/// replaygain chapter value
+	mpc_uint16_t peak;		/// peak chapter loudness level
+	mpc_uint_t tag_size;	/// size of the tag element (0 if no tag is present for this chapter)
+	char * tag;				/// pointer to an APEv2 tag without the preamble
+} mpc_chap_info;
 
 /// Initializes mpc decoder with the supplied stream info parameters.
 /// \param si streaminfo structure indicating format of source stream
@@ -127,15 +135,12 @@ MPC_API mpc_seek_t mpc_demux_pos(mpc_demux * d);
 MPC_API mpc_int_t mpc_demux_chap_nb(mpc_demux * d);
 /**
  * Gets datas associated to a given chapter
- * You can pass 0 for tag and tag_size if you don't needs the tag information
  * The chapter tag is an APEv2 tag without the preamble
  * @param d pointer to a musepack demuxer
  * @param chap_nb chapter number you want datas (from 0 to mpc_demux_chap_nb(d) - 1)
- * @param tag will return a pointer to the chapter tag datas
- * @param tag_size will be filed with the tag data size (0 if no tag for this chapter)
- * @return the sample where the chapter starts
+ * @return the chapter information structure
  */
-MPC_API mpc_uint64_t mpc_demux_chap(mpc_demux * d, int chap_nb, char ** tag, mpc_uint_t * tag_size);
+MPC_API mpc_chap_info * mpc_demux_chap(mpc_demux * d, int chap_nb);
 
 #ifdef __cplusplus
 }

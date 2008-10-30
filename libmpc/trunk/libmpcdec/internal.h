@@ -59,12 +59,6 @@ typedef struct mpc_block_t {
 #define MAX_FRAME_SIZE 4352
 #define DEMUX_BUFFER_SIZE (65536 - MAX_FRAME_SIZE) // need some space as sand box
 
-typedef struct {
-	mpc_uint64_t sample; /// sample where the chapter starts
-	mpc_uint_t tag_size; /// size of the tag element (0 if no tag is present for this chapter)
-	char * tag; /// pointer to an APEv2 tag without the preamble
-} mpc_chap_t;
-
 struct mpc_demux_t {
 	mpc_reader * r;
 	mpc_decoder * d;
@@ -85,7 +79,7 @@ struct mpc_demux_t {
 	// chapters
 	mpc_seek_t chap_pos; /// supposed position of the first chapter block
 	mpc_int_t chap_nb; /// number of chapters (-1 if unknown, 0 if no chapter)
-	mpc_chap_t * chap; /// chapters position and tag
+	mpc_chap_info * chap; /// chapters position and tag
 
 };
 

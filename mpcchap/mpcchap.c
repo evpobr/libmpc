@@ -29,7 +29,8 @@
 // tags.c
 void    Init_Tags        ( void );
 int     FinalizeTags     ( FILE* fp, unsigned int Version, unsigned int flags );
-int     addtag           ( const char* key, size_t keylen, const char* value, size_t valuelen, int converttoutf8, int flags );
+int     addtag           ( const char* key, size_t keylen, const char* value,
+                           size_t valuelen, int converttoutf8, int flags );
 #define TAG_NO_HEADER 1
 #define TAG_NO_FOOTER 2
 #define TAG_NO_PREAMBLE 4
@@ -38,6 +39,11 @@ int     addtag           ( const char* key, size_t keylen, const char* value, si
 #ifdef _MSC_VER
 #define atoll _atoi64
 #endif
+
+static const int Ptis[] = {	PTI_TITLE, PTI_PERFORMER, PTI_SONGWRITER, PTI_COMPOSER,
+		PTI_ARRANGER, PTI_MESSAGE, PTI_GENRE};
+static char const * const APE_keys[] = {"Title", "Artist", "Songwriter", "Composer",
+		"Arranger", "Comment", "Genre"};
 
 static void usage(const char *exename)
 {
@@ -76,29 +82,46 @@ mpc_status add_chaps_ini(char * mpc_file, char * chap_file, mpc_demux * demux, m
 
 	int nchap = iniparser_getnsec(dict);
 	for (i = 0; i < nchap; i++) {
-		Init_Tags();
-		int j, nitem, tag_len = 0;
+		int j, nitem, ntags = 0, tag_len = 0;
+		mpc_uint16_t gain = 0, peak = 0;
 		char * chap_sec = iniparser_getsecname(dict, i);
 		mpc_int64_t chap_pos = atoll(chap_sec);
+
 		if (chap_pos > si->samples - si->beg_silence)
-			fprintf(stderr, "warning : chapter %i starts @ %lli after the end of the stream (%lli)\n", i + 1, chap_pos, si->samples - si->beg_silence);
+			fprintf(stderr, "warning : chapter %i starts @ %lli samples after the end of the stream (%lli)\n",
+			        i + 1, chap_pos, si->samples - si->beg_silence);
+
+		Init_Tags();
+
 		nitem = iniparser_getnkey(dict, i);
 		for (j = 0; j < nitem; j++) {
 			char * item_key, * item_value;
 			int key_len, item_len;
 			item_key = iniparser_getkeyname(dict, i, j, & item_value);
-			key_len = strlen(item_key);
-			item_len = strlen(item_value);
-			addtag(item_key, key_len, item_value, item_len, 0, 0);
-			tag_len += key_len + item_len;
+			if (strcmp(item_key, "gain") == 0)
+				gain = atoi(item_value);
+			else if (strcmp(item_key, "peak") == 0)
+				peak = atoi(item_value);
+			else {
+				key_len = strlen(item_key);
+				item_len = strlen(item_value);
+				addtag(item_key, key_len, item_value, item_len, 0, 0);
+				tag_len += key_len + item_len;
+				ntags++;
+			}
 		}
-		if (nitem > 0) tag_len += 24 + nitem * 9;
+		if (ntags > 0) tag_len += 24 + ntags * 9;
 		char block_header[12] = "CT";
 		char sample_offset[10];
 		int offset_size = encodeSize(chap_pos, sample_offset, MPC_FALSE);
-		tag_len = encodeSize(tag_len + offset_size + 2, block_header + 2, MPC_TRUE);
+		tag_len = encodeSize(tag_len + 4 + offset_size + 2, block_header + 2, MPC_TRUE);
 		fwrite(block_header, 1, tag_len + 2, in_file);
 		fwrite(sample_offset, 1, offset_size, in_file);
+		sample_offset[0] = gain >> 8;
+		sample_offset[1] = gain & 0xFF;
+		sample_offset[2] = peak >> 8;
+		sample_offset[3] = peak & 0xFF;
+		fwrite(sample_offset, 1, 4, in_file);
 		FinalizeTags(in_file, TAG_VERSION, TAG_NO_FOOTER | TAG_NO_PREAMBLE);
 	}
 
@@ -114,11 +137,6 @@ mpc_status add_chaps_ini(char * mpc_file, char * chap_file, mpc_demux * demux, m
 
 mpc_status add_chaps_cue(char * mpc_file, char * chap_file, mpc_demux * demux, mpc_streaminfo * si)
 {
-	int Ptis[7] = {	PTI_TITLE, PTI_PERFORMER, PTI_SONGWRITER, PTI_COMPOSER,
-			PTI_ARRANGER, PTI_MESSAGE, PTI_GENRE};
-	char * APE_keys[7] = {"Title", "Artist", "Songwriter", "Composer",
-			"Arranger", "Comment", "Genre"};
-
 	Cd *cd = 0;
 	int nchap, format = UNKNOWN;
 	struct stat stbuf;
@@ -154,7 +172,8 @@ mpc_status add_chaps_cue(char * mpc_file, char * chap_file, mpc_demux * demux, m
 		mpc_int64_t chap_pos = (mpc_int64_t) si->sample_freq * track_get_start (track) / 75;
 
 		if (chap_pos > si->samples - si->beg_silence)
-			fprintf(stderr, "warning : chapter %i starts @ %lli after the end of the stream (%lli)\n", i, chap_pos, si->samples - si->beg_silence);
+			fprintf(stderr, "warning : chapter %i starts @ %lli samples after the end of the stream (%lli)\n",
+			        i, chap_pos, si->samples - si->beg_silence);
 
 		Init_Tags();
 
@@ -167,7 +186,7 @@ mpc_status add_chaps_cue(char * mpc_file, char * chap_file, mpc_demux * demux, m
 		nitem++;
 
 		for (j = 0; j < (sizeof(Ptis) / sizeof(*Ptis)); j++) {
-			char * item_key = APE_keys[j], * item_value;
+			char const * item_key = APE_keys[j], * item_value;
 			item_value = cdtext_get (Ptis[j], cdtext);
 			if (item_value != 0) {
 				key_len = strlen(item_key);
@@ -182,9 +201,10 @@ mpc_status add_chaps_cue(char * mpc_file, char * chap_file, mpc_demux * demux, m
 		char block_header[12] = "CT";
 		char sample_offset[10];
 		int offset_size = encodeSize(chap_pos, sample_offset, MPC_FALSE);
-		tag_len = encodeSize(tag_len + offset_size + 2, block_header + 2, MPC_TRUE);
+		tag_len = encodeSize(tag_len + 4 + offset_size + 2, block_header + 2, MPC_TRUE);
 		fwrite(block_header, 1, tag_len + 2, in_file);
 		fwrite(sample_offset, 1, offset_size, in_file);
+		fwrite("\0\0\0\0", 1, 4, in_file); // put unknow chapter gain / peak
 		FinalizeTags(in_file, TAG_VERSION, TAG_NO_FOOTER | TAG_NO_PREAMBLE);
 	}
 
@@ -200,9 +220,8 @@ mpc_status add_chaps_cue(char * mpc_file, char * chap_file, mpc_demux * demux, m
 mpc_status dump_chaps(mpc_demux * demux, char * chap_file, int chap_nb)
 {
 	int i;
-	unsigned int tag_size;
 	FILE * out_file;
-	char * tag;
+	mpc_chap_info * chap;
 
 	if (chap_nb <= 0)
 		return MPC_STATUS_OK;
@@ -212,9 +231,11 @@ mpc_status dump_chaps(mpc_demux * demux, char * chap_file, int chap_nb)
 		return !MPC_STATUS_OK;
 
 	for (i = 0; i < chap_nb; i++) {
-		fprintf(out_file, "[%lli]\n", mpc_demux_chap(demux, i, &tag, &tag_size));
-		if (tag_size > 0) {
+		chap = mpc_demux_chap(demux, i);
+		fprintf(out_file, "[%lli]\ngain=%i\npeak=%i\n", chap->sample, chap->gain, chap->peak);
+		if (chap->tag_size > 0) {
 			int item_count, j;
+			char const * tag = chap->tag;
 			item_count = tag[8] | (tag[9] << 8) | (tag[10] << 16) | (tag[11] << 24);
 			tag += 24;
 			for( j = 0; j < item_count; j++){

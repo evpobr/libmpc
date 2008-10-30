@@ -330,7 +330,7 @@ static void mpc_demux_chap_find(mpc_demux * d)
 		mpc_uint64_t chap_sample;
 		d->chap_nb++;
 		chap_size += size;
-		size = mpc_bits_get_size(&d->bits_reader, &chap_sample);
+		size = mpc_bits_get_size(&d->bits_reader, &chap_sample) + 4;
 		chap_size += size;
 		tag_size += b.size - size;
 		mpc_demux_seek(d, d->chap_pos + (chap_size + tag_size) * 8, 20);
@@ -339,14 +339,16 @@ static void mpc_demux_chap_find(mpc_demux * d)
 
 	if (d->chap_nb > 0) {
 		char * ptag;
-		d->chap = malloc(sizeof(mpc_chap_t) * d->chap_nb + tag_size);
+		d->chap = malloc(sizeof(mpc_chap_info) * d->chap_nb + tag_size);
 		ptag = (char*)(d->chap + d->chap_nb);
 
 		mpc_demux_seek(d, d->chap_pos, 11);
 		size = mpc_bits_get_block(&d->bits_reader, &b);
 		while (memcmp(b.key, "CT", 2) == 0) {
 			mpc_demux_fill(d, 11 + (mpc_uint32_t) b.size, 0);
-			size = mpc_bits_get_size(&d->bits_reader, &d->chap[i].sample);
+			size = mpc_bits_get_size(&d->bits_reader, &d->chap[i].sample) + 4;
+			d->chap[i].gain = (mpc_uint16_t) mpc_bits_read(&d->bits_reader, 16);
+			d->chap[i].peak = (mpc_uint16_t) mpc_bits_read(&d->bits_reader, 16);
 			memcpy(ptag, d->bits_reader.buff + ((8 - d->bits_reader.count) >> 3), b.size - size);
 			d->bits_reader.buff += b.size - size;
 			d->chap[i].tag_size = b.size - size;
@@ -374,25 +376,18 @@ mpc_int_t mpc_demux_chap_nb(mpc_demux * d)
 
 /**
  * Gets datas associated to a given chapter
- * You can pass 0 for tag and tag_size if you don't needs the tag information
  * The chapter tag is an APEv2 tag without the preamble
  * @param d pointer to a musepack demuxer
  * @param chap_nb chapter number you want datas (from 0 to mpc_demux_chap_nb(d) - 1)
- * @param tag will return a pointer to the chapter tag datas
- * @param tag_size will be filed with the tag data size (0 if no tag for this chapter)
- * @return the sample where the chapter starts
+ * @return the chapter information structure
  */
-mpc_uint64_t mpc_demux_chap(mpc_demux * d, int chap_nb, char ** tag, mpc_uint_t * tag_size)
+mpc_chap_info * mpc_demux_chap(mpc_demux * d, int chap_nb)
 {
 	if (d->chap_nb == -1)
 		mpc_demux_chap_find(d);
 	if (chap_nb >= d->chap_nb || chap_nb < 0)
 		return 0;
-	if (tag != 0 && tag_size != 0) {
-		*tag = d->chap[chap_nb].tag;
-		*tag_size = d->chap[chap_nb].tag_size;
-	}
-	return d->chap[chap_nb].sample;
+	return &d->chap[chap_nb];
 }
 
 static mpc_status mpc_demux_header(mpc_demux * d)

@@ -36,7 +36,7 @@
 
 MPC_API int mpc_bits_get_block(mpc_bits_reader * r, mpc_block * p_block);
 mpc_int32_t mpc_bits_golomb_dec(mpc_bits_reader * r, const mpc_uint_t k);
-unsigned int mpc_bits_get_size(mpc_bits_reader * r, mpc_uint64_t * p_size);
+MPC_API unsigned int mpc_bits_get_size(mpc_bits_reader * r, mpc_uint64_t * p_size);
 mpc_uint32_t mpc_bits_log_dec(mpc_bits_reader * r, mpc_uint_t max);
 
 extern const mpc_uint32_t Cnk[MAX_ENUM / 2][MAX_ENUM];

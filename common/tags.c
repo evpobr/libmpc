@@ -29,6 +29,10 @@
 # include <windows.h>
 #endif
 
+#ifdef _MSC_VER
+# define strncasecmp	strnicmp
+#endif
+
 // Path separator
 #if defined __unix__  ||  defined __bsdi__  ||  defined __FreeBSD__  ||  defined __OpenBSD__  ||  defined __NetBSD__  ||  defined __APPLE__
 # define PATH_SEP               '/'

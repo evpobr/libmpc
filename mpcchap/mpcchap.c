@@ -37,7 +37,10 @@ int     addtag           ( const char* key, size_t keylen, const char* value,
 #define TAG_VERSION 2000
 
 #ifdef _MSC_VER
-#define atoll _atoi64
+# include <io.h>
+# define atoll		_atoi64
+# define ftruncate	chsize
+# define strcasecmp stricmp
 #endif
 
 static const int Ptis[] = {	PTI_TITLE, PTI_PERFORMER, PTI_SONGWRITER, PTI_COMPOSER,
@@ -65,26 +68,28 @@ mpc_status add_chaps_ini(char * mpc_file, char * chap_file, mpc_demux * demux, m
 {
 	struct stat stbuf;
 	FILE * in_file;
-	int chap_pos, end_pos, chap_size, i;
+	int chap_pos, end_pos, chap_size, i, nchap;
+	char * tmp_buff;
+	dictionary * dict;
 
 	chap_pos = (demux->chap_pos >> 3) + si->header_position;
 	end_pos = mpc_demux_pos(demux) >> 3;
 	chap_size = end_pos - chap_pos;
 
 	stat(mpc_file, &stbuf);
-	char * tmp_buff = malloc(stbuf.st_size - chap_pos - chap_size);
+	tmp_buff = malloc(stbuf.st_size - chap_pos - chap_size);
 	in_file = fopen( mpc_file, "r+b" );
 	fseek(in_file, chap_pos + chap_size, SEEK_SET);
 	fread(tmp_buff, 1, stbuf.st_size - chap_pos - chap_size, in_file);
 	fseek(in_file, chap_pos, SEEK_SET);
 
-	dictionary * dict = iniparser_load(chap_file);
+	dict = iniparser_load(chap_file);
 
-	int nchap = iniparser_getnsec(dict);
+	nchap = iniparser_getnsec(dict);
 	for (i = 0; i < nchap; i++) {
-		int j, nitem, ntags = 0, tag_len = 0;
+		int j, nitem, ntags = 0, tag_len = 0, offset_size;
 		mpc_uint16_t gain = 0, peak = 0;
-		char * chap_sec = iniparser_getsecname(dict, i);
+		char * chap_sec = iniparser_getsecname(dict, i), block_header[12] = "CT", sample_offset[10];
 		mpc_int64_t chap_pos = atoll(chap_sec);
 
 		if (chap_pos > si->samples - si->beg_silence)
@@ -111,9 +116,8 @@ mpc_status add_chaps_ini(char * mpc_file, char * chap_file, mpc_demux * demux, m
 			}
 		}
 		if (ntags > 0) tag_len += 24 + ntags * 9;
-		char block_header[12] = "CT";
-		char sample_offset[10];
-		int offset_size = encodeSize(chap_pos, sample_offset, MPC_FALSE);
+		
+		offset_size = encodeSize(chap_pos, sample_offset, MPC_FALSE);
 		tag_len = encodeSize(tag_len + 4 + offset_size + 2, block_header + 2, MPC_TRUE);
 		fwrite(block_header, 1, tag_len + 2, in_file);
 		fwrite(sample_offset, 1, offset_size, in_file);
@@ -142,6 +146,7 @@ mpc_status add_chaps_cue(char * mpc_file, char * chap_file, mpc_demux * demux, m
 	struct stat stbuf;
 	FILE * in_file;
 	int chap_pos, end_pos, chap_size, i;
+	char * tmp_buff;
 
 	if (0 == (cd = cf_parse(chap_file, &format))) {
 		fprintf(stderr, "%s: input file error\n", chap_file);
@@ -153,7 +158,7 @@ mpc_status add_chaps_cue(char * mpc_file, char * chap_file, mpc_demux * demux, m
 	chap_size = end_pos - chap_pos;
 
 	stat(mpc_file, &stbuf);
-	char * tmp_buff = malloc(stbuf.st_size - chap_pos - chap_size);
+	tmp_buff = malloc(stbuf.st_size - chap_pos - chap_size);
 	in_file = fopen( mpc_file, "r+b" );
 	fseek(in_file, chap_pos + chap_size, SEEK_SET);
 	fread(tmp_buff, 1, stbuf.st_size - chap_pos - chap_size, in_file);
@@ -161,15 +166,17 @@ mpc_status add_chaps_cue(char * mpc_file, char * chap_file, mpc_demux * demux, m
 
 	nchap = cd_get_ntrack(cd);
 	for (i = 1; i <= nchap; i++) {
-		int j, nitem = 0, tag_len = 0, key_len, item_len;
+		char track_buf[16], block_header[12] = "CT", sample_offset[10];
+		int j, nitem = 0, tag_len = 0, key_len, item_len, offset_size;
 		Track * track;
 		Cdtext *cdtext;
+		mpc_int64_t chap_pos;
 
 		track = cd_get_track (cd, i);
 		cdtext = track_get_cdtext(track);
 
 		// position du chapitre
-		mpc_int64_t chap_pos = (mpc_int64_t) si->sample_freq * track_get_start (track) / 75;
+		chap_pos = (mpc_int64_t) si->sample_freq * track_get_start (track) / 75;
 
 		if (chap_pos > si->samples - si->beg_silence)
 			fprintf(stderr, "warning : chapter %i starts @ %lli samples after the end of the stream (%lli)\n",
@@ -177,7 +184,6 @@ mpc_status add_chaps_cue(char * mpc_file, char * chap_file, mpc_demux * demux, m
 
 		Init_Tags();
 
-		char track_buf[16];
 		sprintf(track_buf, "%i/%i", i, nchap);
 		key_len = 5;
 		item_len = strlen(track_buf);
@@ -198,9 +204,7 @@ mpc_status add_chaps_cue(char * mpc_file, char * chap_file, mpc_demux * demux, m
 		}
 
 		tag_len += 24 + nitem * 9;
-		char block_header[12] = "CT";
-		char sample_offset[10];
-		int offset_size = encodeSize(chap_pos, sample_offset, MPC_FALSE);
+		offset_size = encodeSize(chap_pos, sample_offset, MPC_FALSE);
 		tag_len = encodeSize(tag_len + 4 + offset_size + 2, block_header + 2, MPC_TRUE);
 		fwrite(block_header, 1, tag_len + 2, in_file);
 		fwrite(sample_offset, 1, offset_size, in_file);
@@ -261,6 +265,7 @@ int main(int argc, char **argv)
 	char * mpc_file, * chap_file;
 	mpc_status err;
 	FILE * test_file;
+	int chap_nb;
 
 	if (argc != 3)
 		usage(argv[0]);
@@ -280,7 +285,7 @@ int main(int argc, char **argv)
 		exit(!MPC_STATUS_OK);
 	}
 
-	int chap_nb = mpc_demux_chap_nb(demux);
+	chap_nb = mpc_demux_chap_nb(demux);
 
 	test_file = fopen(chap_file, "rb" );
 	if (test_file == 0) {

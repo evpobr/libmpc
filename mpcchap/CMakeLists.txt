@@ -1,9 +1,9 @@
-FIND_PATH(CUEFILE_INCLUDE_DIR lib/cuefile.h
-	${libmpc_SOURCE_DIR}/../cuetools-1.3.1/src
+FIND_PATH(CUEFILE_INCLUDE_DIR cuetools/cuefile.h
+	${libmpc_SOURCE_DIR}/../libcuefile/include
 )
 
-FIND_LIBRARY(CUEFILE_LIBRARY NAMES cuefile_static PATHS
-	${CUEFILE_INCLUDE_DIR}/lib
+FIND_LIBRARY(CUEFILE_LIBRARY NAMES cuefile PATHS
+	${CUEFILE_INCLUDE_DIR}/../src
 )
 
 include_directories(${libmpc_SOURCE_DIR}/include)

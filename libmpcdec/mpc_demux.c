@@ -381,7 +381,7 @@ mpc_int_t mpc_demux_chap_nb(mpc_demux * d)
  * @param chap_nb chapter number you want datas (from 0 to mpc_demux_chap_nb(d) - 1)
  * @return the chapter information structure
  */
-mpc_chap_info * mpc_demux_chap(mpc_demux * d, int chap_nb)
+mpc_chap_info const * mpc_demux_chap(mpc_demux * d, int chap_nb)
 {
 	if (d->chap_nb == -1)
 		mpc_demux_chap_find(d);

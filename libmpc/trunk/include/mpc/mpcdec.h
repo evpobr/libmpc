@@ -140,7 +140,7 @@ MPC_API mpc_int_t mpc_demux_chap_nb(mpc_demux * d);
  * @param chap_nb chapter number you want datas (from 0 to mpc_demux_chap_nb(d) - 1)
  * @return the chapter information structure
  */
-MPC_API mpc_chap_info * mpc_demux_chap(mpc_demux * d, int chap_nb);
+MPC_API mpc_chap_info const * mpc_demux_chap(mpc_demux * d, int chap_nb);
 
 #ifdef __cplusplus
 }

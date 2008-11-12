@@ -70,7 +70,7 @@ mpc_bool_t    FrontendPresent = 0;      // Flag for frontend-detection
 #define cat(a,b,c) _cat(a,b,c)
 #define MPCENC_VERSION cat(MPCENC_MAJOR,MPCENC_MINOR,MPCENC_BUILD)
 
-const char    About []        = "MPC Encoder " MPCENC_VERSION " (C) 1999-2007 Buschmann/Klemm/Piecha/MDT\nBuilt " __DATE__ " " __TIME__;
+const char    About []        = "MPC Encoder " MPCENC_VERSION " (C) 1999-2008 Buschmann/Klemm/Piecha/MDT\nBuilt " __DATE__ " " __TIME__;
 
 
 #if defined _WIN32  ||  defined __TURBOC__

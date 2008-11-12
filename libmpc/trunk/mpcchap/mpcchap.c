@@ -116,7 +116,7 @@ mpc_status add_chaps_ini(char * mpc_file, char * chap_file, mpc_demux * demux, m
 			}
 		}
 		if (ntags > 0) tag_len += 24 + ntags * 9;
-		
+
 		offset_size = encodeSize(chap_pos, sample_offset, MPC_FALSE);
 		tag_len = encodeSize(tag_len + 4 + offset_size + 2, block_header + 2, MPC_TRUE);
 		fwrite(block_header, 1, tag_len + 2, in_file);
@@ -225,7 +225,7 @@ mpc_status dump_chaps(mpc_demux * demux, char * chap_file, int chap_nb)
 {
 	int i;
 	FILE * out_file;
-	mpc_chap_info * chap;
+	mpc_chap_info const * chap;
 
 	if (chap_nb <= 0)
 		return MPC_STATUS_OK;

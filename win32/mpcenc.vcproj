@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="9.00"
 	Name="mpcenc"
 	ProjectGUID="{15082E34-9324-469F-8423-F995B4814A37}"
 	RootNamespace="mppenc"
 	Keyword="Win32Proj"
+	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -47,7 +48,6 @@
 				RuntimeLibrary="1"
 				BrowseInformation="1"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="1"
 				CompileAs="1"
 			/>
@@ -69,6 +69,8 @@
 				GenerateMapFile="true"
 				MapExports="true"
 				SubSystem="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -89,9 +91,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -123,6 +122,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="2"
 				AdditionalIncludeDirectories="../include;../libmpcenc;../libmpcpsy"
 				PreprocessorDefinitions="_WIN32;WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;FAST_MATH"
 				ExceptionHandling="0"
@@ -130,7 +130,6 @@
 				EnableFunctionLevelLinking="true"
 				FloatingPointModel="2"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="true"
 				CompileAs="1"
 			/>
 			<Tool
@@ -149,6 +148,8 @@
 				SubSystem="1"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				TargetMachine="1"
 				AllowIsolation="false"
 			/>
@@ -170,9 +171,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -202,10 +200,6 @@
 			</File>
 			<File
 				RelativePath="..\mpcenc\stderr.c"
-				>
-			</File>
-			<File
-				RelativePath="..\mpcenc\tags.c"
 				>
 			</File>
 			<File

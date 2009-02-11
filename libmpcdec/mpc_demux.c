@@ -114,6 +114,18 @@ mpc_demux_fill(mpc_demux * d, mpc_uint32_t min_bytes, int flags)
 }
 
 /**
+ * checks if a block key is valid
+ * @param key the two caracters key to check
+ * @return MPC_STATUS_INVALIDSV if the key is invalid, MPC_STATUS_OK else
+ */
+static inline mpc_status mpc_check_key(char * key)
+{
+	if (key[0] < 65 || key[0] > 90 || key[1] < 65 || key[1] > 90)
+		return MPC_STATUS_INVALIDSV;
+	return MPC_STATUS_OK;
+}
+
+/**
  * seek to a bit position in the stream
  * @param d demuxer context
  * @param fpos position in the stream in bits from the beginning of mpc datas
@@ -303,6 +315,8 @@ static void mpc_demux_chap_find(mpc_demux * d)
 	mpc_block b;
 	int tag_size = 0, chap_size = 0, size, i = 0;
 
+	d->chap_nb = 0;
+
 	if (d->si.stream_version < 8)
 		return;
 
@@ -311,6 +325,8 @@ static void mpc_demux_chap_find(mpc_demux * d)
 		mpc_demux_seek(d, cur_pos, 11); // seek to the beginning of the stream
 		size = mpc_bits_get_block(&d->bits_reader, &b);
 		while (memcmp(b.key, "SE", 2) != 0) {
+			if (mpc_check_key(b.key) != MPC_STATUS_OK)
+				return;
 			if (memcmp(b.key, "CT", 2) == 0) {
 				if (d->chap_pos == 0) d->chap_pos = cur_pos;
 			} else
@@ -323,7 +339,6 @@ static void mpc_demux_chap_find(mpc_demux * d)
 			d->chap_pos = cur_pos;
 	}
 
-	d->chap_nb = 0;
 	mpc_demux_seek(d, d->chap_pos, 20);
 	size = mpc_bits_get_block(&d->bits_reader, &b);
 	while (memcmp(b.key, "CT", 2) == 0) {
@@ -424,7 +439,7 @@ static mpc_status mpc_demux_header(mpc_demux * d)
 		mpc_demux_fill(d, 11, 0); // max header block size
 		size = mpc_bits_get_block(&d->bits_reader, &b);
 		while( memcmp(b.key, "AP", 2) != 0 ){ // scan all blocks until audio
-			if (b.key[0] < 65 || b.key[0] > 90 || b.key[1] < 65 || b.key[1] > 90)
+			if (mpc_check_key(b.key) != MPC_STATUS_OK)
 				return MPC_STATUS_INVALIDSV;
 			if (b.size > (mpc_uint64_t) DEMUX_BUFFER_SIZE - 11)
 				return MPC_STATUS_INVALIDSV;
@@ -504,7 +519,7 @@ mpc_status mpc_demux_decode(mpc_demux * d, mpc_frame_info * i)
 			mpc_demux_fill(d, 11, 0); // max header block size
 			mpc_bits_get_block(&d->bits_reader, &b);
 			while( memcmp(b.key, "AP", 2) != 0 ) { // scan all blocks until audio
-				if (b.key[0] < 65 || b.key[0] > 90 || b.key[1] < 65 || b.key[1] > 90)
+				if (mpc_check_key(b.key) != MPC_STATUS_OK)
 					goto error;
 				if (memcmp(b.key, "SE", 2) == 0) { // end block
 					i->bits = -1;

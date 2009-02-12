@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2005, The Musepack Development Team
+  Copyright (c) 2005-2009, The Musepack Development Team
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -118,7 +118,7 @@ mpc_demux_fill(mpc_demux * d, mpc_uint32_t min_bytes, int flags)
  * @param key the two caracters key to check
  * @return MPC_STATUS_INVALIDSV if the key is invalid, MPC_STATUS_OK else
  */
-static inline mpc_status mpc_check_key(char * key)
+static mpc_inline mpc_status mpc_check_key(char * key)
 {
 	if (key[0] < 65 || key[0] > 90 || key[1] < 65 || key[1] > 90)
 		return MPC_STATUS_INVALIDSV;

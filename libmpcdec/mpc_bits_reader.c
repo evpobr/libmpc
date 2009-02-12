@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2007, The Musepack Development Team
+  Copyright (c) 2007-2009, The Musepack Development Team
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -169,7 +169,8 @@ int mpc_bits_get_block(mpc_bits_reader * r, mpc_block * p_block)
 
 	size += mpc_bits_get_size(r, &(p_block->size));
 
-	p_block->size -= size;
+	if (p_block->size >= size) // check if the block size doesn't conflict with the header size
+		p_block->size -= size;
 
 	return size;
 }

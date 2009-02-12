@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2006, The Musepack Development Team
+  Copyright (c) 2006-2009, The Musepack Development Team
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -51,7 +51,7 @@
 
 #define MAX_HEAD_SIZE 20 // maximum size of the packet header before chapter gain (2 + 9 + 9)
 
-const char    About []        = "mpcgain - Musepack (MPC) ReplayGain calculator v" MPCGAIN_VERSION " (C) 2006-2008 MDT\nBuilt " __DATE__ " " __TIME__ "\n";
+const char    About []        = "mpcgain - Musepack (MPC) ReplayGain calculator v" MPCGAIN_VERSION " (C) 2006-2009 MDT\nBuilt " __DATE__ " " __TIME__ "\n";
 
 
 static void usage(const char *exename)

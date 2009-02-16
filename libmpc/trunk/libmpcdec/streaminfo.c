@@ -50,7 +50,7 @@ static char const * const versionNames[] = {
     "'Telephone'", "'Thumb'", "'Radio'", "'Standard'", "'Extreme'", "'Insane'",
     "'BrainDead'", "'quality 9'", "'quality 10'"
 };
-static const mpc_int32_t samplefreqs[4] = { 44100, 48000, 37800, 32000 };
+static const mpc_int32_t samplefreqs[8] = { 44100, 48000, 37800, 32000 };
 
 static const char *
 mpc_get_version_string(float profile) // profile is 0...15, where 7...13 is used
@@ -94,6 +94,14 @@ mpc_get_encoder_string(mpc_streaminfo* si)
 
 		sprintf(si->encoder, "%s %u.%u.%u", tmp, major, minor, build);
 	}
+}
+
+static mpc_status check_streaminfo(mpc_streaminfo * si)
+{
+	if (si->max_band == 0 || si->max_band > 32
+	    || si->channels > 2)
+		return MPC_STATUS_FILE;
+	return MPC_STATUS_OK;
 }
 
 /// Reads streaminfo from SV7 header.
@@ -156,7 +164,7 @@ streaminfo_read_header_sv7(mpc_streaminfo* si, mpc_bits_reader * r)
 	si->average_bitrate = (si->tag_offset  - si->header_position) * 8.0
 			*  si->sample_freq / si->samples;
 
-    return MPC_STATUS_OK;
+	return check_streaminfo(si);
 }
 
 /// Reads replay gain datas
@@ -205,7 +213,7 @@ streaminfo_read_header_sv8(mpc_streaminfo* si, const mpc_bits_reader * r_in,
 		si->average_bitrate = (si->tag_offset - si->header_position) * 8.0
 				*  si->sample_freq / (si->samples - si->beg_silence);
 
-	return MPC_STATUS_OK;
+	return check_streaminfo(si);
 }
 
 /// Reads encoder informations

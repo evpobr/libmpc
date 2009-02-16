@@ -428,8 +428,10 @@ static mpc_status mpc_demux_header(mpc_demux * d)
 		d->si.stream_version = magic[3] & 15;
 		d->si.pns = magic[3] >> 4;
 		if (d->si.stream_version == 7) {
+			mpc_status ret;
 			mpc_demux_fill(d, 6 * 4, MPC_BUFFER_SWAP); // header block size + endian convertion
-			streaminfo_read_header_sv7(&d->si, &d->bits_reader);
+			ret = streaminfo_read_header_sv7(&d->si, &d->bits_reader);
+			if (ret != MPC_STATUS_OK) return ret;
 		} else {
 			return MPC_STATUS_INVALIDSV;
 		}

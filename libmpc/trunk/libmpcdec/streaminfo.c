@@ -98,7 +98,7 @@ mpc_get_encoder_string(mpc_streaminfo* si)
 
 static mpc_status check_streaminfo(mpc_streaminfo * si)
 {
-	if (si->max_band == 0 || si->max_band > 32
+	if (si->max_band == 0 || si->max_band >= 32
 	    || si->channels > 2)
 		return MPC_STATUS_FILE;
 	return MPC_STATUS_OK;

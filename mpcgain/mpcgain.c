@@ -43,7 +43,7 @@
 
 #define MPCGAIN_MAJOR 0
 #define MPCGAIN_MINOR 9
-#define MPCGAIN_BUILD 0
+#define MPCGAIN_BUILD 1
 
 #define _cat(a,b,c) #a"."#b"."#c
 #define cat(a,b,c) _cat(a,b,c)

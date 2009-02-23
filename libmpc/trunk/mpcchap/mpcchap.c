@@ -43,6 +43,17 @@ int     addtag           ( const char* key, size_t keylen, const char* value,
 # define strcasecmp stricmp
 #endif
 
+#define MPCCHAP_MAJOR 0
+#define MPCCHAP_MINOR 9
+#define MPCCHAP_BUILD 0
+
+#define _cat(a,b,c) #a"."#b"."#c
+#define cat(a,b,c) _cat(a,b,c)
+#define MPCCHAP_VERSION cat(MPCCHAP_MAJOR,MPCCHAP_MINOR,MPCCHAP_BUILD)
+
+const char About[] = "%s - Musepack (MPC) sv8 chapter editor v" MPCCHAP_VERSION " (C) 2008-2009 MDT\nBuilt " __DATE__ " " __TIME__ "\n";
+
+
 static const int Ptis[] = {	PTI_TITLE, PTI_PERFORMER, PTI_SONGWRITER, PTI_COMPOSER,
 		PTI_ARRANGER, PTI_MESSAGE, PTI_GENRE};
 static char const * const APE_keys[] = {"Title", "Artist", "Songwriter", "Composer",
@@ -50,7 +61,7 @@ static char const * const APE_keys[] = {"Title", "Artist", "Songwriter", "Compos
 
 static void usage(const char *exename)
 {
-	printf(
+	fprintf(stderr,
 	        "Usage: %s <infile.mpc> <chapterfile.ini / cuefile>\n"
 	        "   if chapterfile.ini exists, chapter tags in infile.mpc will be\n"
 	        "   replaced by those from chapterfile.ini, else chapters will be\n"
@@ -266,6 +277,8 @@ int main(int argc, char **argv)
 	mpc_status err;
 	FILE * test_file;
 	int chap_nb;
+
+	fprintf(stderr, About, argv[0]);
 
 	if (argc != 3)
 		usage(argv[0]);

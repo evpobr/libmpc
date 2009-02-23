@@ -1,5 +1,6 @@
 /*
  * Musepack audio compression
+ * Copyright (c) 2005-2009, The Musepack Development Team
  * Copyright (C) 1999-2004 Buschmann/Klemm/Piecha/Wolf
  *
  * This library is free software; you can redistribute it and/or

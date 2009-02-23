@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2007, The Musepack Development Team
+  Copyright (c) 2007-2009, The Musepack Development Team
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -54,7 +54,7 @@
 #define cat(a,b,c) _cat(a,b,c)
 #define MPC2SV8_VERSION cat(MPC2SV8_MAJOR,MPC2SV8_MINOR,MPC2SV8_BUILD)
 
-const char    About []        = "mpc2sv8 - Musepack (MPC) sv7 to sv8 converter v" MPC2SV8_VERSION " (C) 2007 MDT\nBuilt " __DATE__ " " __TIME__ "\n";
+const char    About []        = "mpc2sv8 - Musepack (MPC) sv7 to sv8 converter v" MPC2SV8_VERSION " (C) 2007-2009 MDT\nBuilt " __DATE__ " " __TIME__ "\n";
 
 static void datacpy(mpc_decoder * d, mpc_encoder_t * e)
 {

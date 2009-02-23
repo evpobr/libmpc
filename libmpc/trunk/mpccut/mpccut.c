@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2007, The Musepack Development Team
+  Copyright (c) 2007-2009, The Musepack Development Team
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -53,7 +53,7 @@
 #define cat(a,b,c) _cat(a,b,c)
 #define MPCCUT_VERSION cat(MPCCUT_MAJOR,MPCCUT_MINOR,MPCCUT_BUILD)
 
-const char    About []        = "mpccut - Musepack (MPC) stream cutter v" MPCCUT_VERSION " (C) 2007 MDT\nBuilt " __DATE__ " " __TIME__ "\n";
+const char    About []        = "mpccut - Musepack (MPC) stream cutter v" MPCCUT_VERSION " (C) 2007-2009 MDT\nBuilt " __DATE__ " " __TIME__ "\n";
 
 static void copy_data(FILE * in_file, int in_file_pos, FILE * out_file, int data_size)
 {

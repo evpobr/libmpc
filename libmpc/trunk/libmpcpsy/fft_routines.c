@@ -1,5 +1,6 @@
 /*
  * Musepack audio compression
+ * Copyright (c) 2005-2009, The Musepack Development Team
  * Copyright (C) 1999-2004 Buschmann/Klemm/Piecha/Wolf
  *
  * This library is free software; you can redistribute it and/or
@@ -260,7 +261,7 @@ PolarSpec1024 ( const float* x, float* erg, float* phs )
     for( i = 0; i < 512; ++i )
     {
         erg[i]  = a[i*2] * a[i*2] + a[i*2+1] * a[i*2+1];
-        phs[i]  = ATAN2F( a[i*2+1], a[i*2] );  
+        phs[i]  = ATAN2F( a[i*2+1], a[i*2] );
     }
 }
 
@@ -273,9 +274,9 @@ Cepstrum2048 ( float* cep, const int MaxLine )
     // generate real, even spectrum (symmetric around 1024, cep[2048-i] = cep[i])
     for( i = 0, j = 1024; i < 1024; ++i, --j )
         cep[1024 + j] = cep[i];
- 
+
     rdft(2048, cep, ip, w);
- 
+
     // only real part as outcome (all even indexes of cep[])
     for( i = 0; i < MaxLine + 1; ++i )
         cep[i] = cep[i*2] * (float) (0.9888 / 2048);

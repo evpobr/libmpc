@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2005-2007, The Musepack Development Team
+  Copyright (c) 2005-2009, The Musepack Development Team
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -50,17 +50,17 @@
 # define SET_BINARY_MODE(file) setmode(fileno(file), O_BINARY)
 #else
 # define SET_BINARY_MODE(file)
-#endif 
+#endif
 
-#define MPCDEC_MAJOR 0
-#define MPCDEC_MINOR 9
-#define MPCDEC_BUILD 2
+#define MPCDEC_MAJOR 1
+#define MPCDEC_MINOR 0
+#define MPCDEC_BUILD 0
 
 #define _cat(a,b,c) #a"."#b"."#c
 #define cat(a,b,c) _cat(a,b,c)
 #define MPCDEC_VERSION cat(MPCDEC_MAJOR,MPCDEC_MINOR,MPCDEC_BUILD)
 
-const char    About []        = "mpcdec - Musepack (MPC) decoder v" MPCDEC_VERSION " (C) 2006-2007 MDT\nBuilt " __DATE__ " " __TIME__ "\n";
+const char    About []        = "mpcdec - Musepack (MPC) decoder v" MPCDEC_VERSION " (C) 2006-2009 MDT\nBuilt " __DATE__ " " __TIME__ "\n";
 
 
 t_wav_uint32 mpc_wav_output_write(void* p_user_data, void const* p_buffer, t_wav_uint32 p_bytes)

@@ -979,6 +979,9 @@ EvalParameters (PsyModel * m, int argc, char** argv, char** InputFile, char** Ou
             if ( ++k >= argc ) { stderr_printf ( errmsg, arg ); return -1; }
             m->ShortThr = (float) atof (argv[k]);
         }
+	    else if ( 0 == strcmp ( arg, "xlevel") || 0 == strcmp ( arg, "noxlevel") ) {
+		    stderr_printf ( "\nXlevel coding not needed anymore, --%s ignored.\n", arg );
+	    }
         else if ( 0 == strcmp ( arg, "nmt") ) {                                         // NMT
             if ( ++k >= argc ) { stderr_printf ( errmsg, arg );  return -1; }
             m->NMT = (float) atof (argv[k]);
@@ -1223,16 +1226,9 @@ EvalParameters (PsyModel * m, int argc, char** argv, char** InputFile, char** Ou
             }
         }
         else {
-            char c;
             stderr_printf ( "\n\033[33;41;1mERROR\033[0m: unknown option '--%s' !\n", arg );
-
-            stderr_printf ( "\nNevertheless continue with encoding (Y/n)? \a" );
-            c = waitkey ();
-            if ( c != 'Y' && c != 'y' ) {
-                stderr_printf ( "\n\n*** Abort ***\n" );
-                return -1;
-            }
-            stderr_printf ( "\n" );
+	        shorthelp();
+            return -1;
         }
     }
 

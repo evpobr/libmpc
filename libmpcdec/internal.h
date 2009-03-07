@@ -83,6 +83,18 @@ struct mpc_demux_t {
 
 };
 
+/**
+ * checks if a block key is valid
+ * @param key the two caracters key to check
+ * @return MPC_STATUS_INVALIDSV if the key is invalid, MPC_STATUS_OK else
+ */
+static mpc_inline mpc_status mpc_check_key(char * key)
+{
+	if (key[0] < 65 || key[0] > 90 || key[1] < 65 || key[1] > 90)
+		return MPC_STATUS_INVALIDSV;
+	return MPC_STATUS_OK;
+}
+
 /// helper functions used by multiple files
 mpc_uint32_t mpc_random_int(mpc_decoder *d); // in synth_filter.c
 void mpc_decoder_init_quant(mpc_decoder *d, double scale_factor);

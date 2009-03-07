@@ -114,18 +114,6 @@ mpc_demux_fill(mpc_demux * d, mpc_uint32_t min_bytes, int flags)
 }
 
 /**
- * checks if a block key is valid
- * @param key the two caracters key to check
- * @return MPC_STATUS_INVALIDSV if the key is invalid, MPC_STATUS_OK else
- */
-static mpc_inline mpc_status mpc_check_key(char * key)
-{
-	if (key[0] < 65 || key[0] > 90 || key[1] < 65 || key[1] > 90)
-		return MPC_STATUS_INVALIDSV;
-	return MPC_STATUS_OK;
-}
-
-/**
  * seek to a bit position in the stream
  * @param d demuxer context
  * @param fpos position in the stream in bits from the beginning of mpc datas

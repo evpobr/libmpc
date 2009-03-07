@@ -164,6 +164,10 @@ int main(int argc, char **argv)
 	size = mpc_bits_get_block(&r, &b);
 
 	while( memcmp(b.key, "AP", 2) != 0 ) {
+		if ((err = mpc_check_key(b.key)) != MPC_STATUS_OK) {
+			fprintf(stderr, "Error : invalid input stream\n");
+			goto error;
+		}
 		if (memcmp(b.key, "EI", 2) == 0)
 			copy_data(in_file, i, e.outputFile, b.size + size);
 		i += b.size + size;
@@ -181,6 +185,10 @@ int main(int argc, char **argv)
 
 
 	while( start_block != 0 ){
+		if ((err = mpc_check_key(b.key)) != MPC_STATUS_OK) {
+			fprintf(stderr, "Error : invalid input stream\n");
+			goto error;
+		}
 		if (memcmp(b.key, "AP", 2) == 0)
 			start_block--;
 		i += b.size + size;
@@ -192,6 +200,10 @@ int main(int argc, char **argv)
 	}
 
 	while( block_num != 0 ){
+		if ((err = mpc_check_key(b.key)) != MPC_STATUS_OK) {
+			fprintf(stderr, "Error : invalid input stream\n");
+			goto error;
+		}
 		if (memcmp(b.key, "AP", 2) == 0) {
 			if ((e.block_cnt & ((1 << e.seek_pwr) - 1)) == 0) {
 				e.seek_table[e.seek_pos] = ftell(e.outputFile);
@@ -213,11 +225,14 @@ int main(int argc, char **argv)
 	writeBlock(&e, "ST", MPC_FALSE, 0); // write seek table block
 	writeBlock(&e, "SE", MPC_FALSE, 0); // write end of stream block
 
+error:
 	fclose ( e.outputFile );
 	fclose ( in_file );
 	mpc_demux_exit(demux);
 	mpc_reader_exit_stdio(&reader);
 	mpc_encoder_exit(&e);
+	if (err != MPC_STATUS_OK)
+		remove(argv[optind + 1]);
 
     return err;
 }

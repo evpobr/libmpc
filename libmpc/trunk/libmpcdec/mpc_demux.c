@@ -197,13 +197,15 @@ static mpc_int32_t mpc_demux_skip_id3v2(mpc_demux * d)
 	size |= tmp[2] << 7;
 	size |= tmp[3];
 
-	if ( footerPresent )
-		size += 10;
+	size += 10; //header
 
-	mpc_demux_fill(d, size, 0);
-	d->bits_reader.buff += size;
+	if ( footerPresent ) size += 10;
 
-	return size + 10;
+	// This is called before file headers get read, streamversion etc isn't yet known, demuxing isn't properly initialized and we can't call mpc_demux_seek() from here.
+	mpc_demux_clear_buff(d);
+	if (!d->r->seek(d->r, size)) return MPC_STATUS_FILE;
+
+	return size;
 }
 
 static mpc_status mpc_demux_seek_init(mpc_demux * d)

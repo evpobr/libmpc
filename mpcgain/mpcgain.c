@@ -43,7 +43,7 @@
 
 #define MPCGAIN_MAJOR 0
 #define MPCGAIN_MINOR 9
-#define MPCGAIN_BUILD 1
+#define MPCGAIN_BUILD 2
 
 #define _cat(a,b,c) #a"."#b"."#c
 #define cat(a,b,c) _cat(a,b,c)
@@ -107,7 +107,7 @@ static void write_chaps_gain(mpc_demux * demux, const char * file_name,
 	long next_chap_pos = demux->chap_pos >> 3;
 
 
-	file = fopen( file_name, "r+");
+	file = fopen( file_name, "r+b");
 	if (file == 0) {
 		fprintf(stderr, "Can't open file \"%s\" for writing\n", file_name);
 		return;
@@ -254,7 +254,7 @@ int main(int argc, char **argv)
 		mpc_uint64_t size;
 		FILE * file;
 
-		file = fopen( argv[j + 1], "r+");
+		file = fopen( argv[j + 1], "r+b");
 		if (file == 0) {
 			fprintf(stderr, "Can't open file \"%s\" for writing\n", argv[j + 1]);
 			continue;

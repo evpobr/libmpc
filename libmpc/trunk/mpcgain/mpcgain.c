@@ -43,7 +43,7 @@
 
 #define MPCGAIN_MAJOR 0
 #define MPCGAIN_MINOR 9
-#define MPCGAIN_BUILD 2
+#define MPCGAIN_BUILD 3
 
 #define _cat(a,b,c) #a"."#b"."#c
 #define cat(a,b,c) _cat(a,b,c)
@@ -269,17 +269,23 @@ int main(int argc, char **argv)
 		r.buff = buffer + 4;
 		r.count = 8;
 
-		size = mpc_bits_get_block(&r, &b);
+		for(;;) {
+			size = mpc_bits_get_block(&r, &b);
+			if (mpc_check_key(b.key) != MPC_STATUS_OK) break;
 
-		while (memcmp(b.key, "RG", 2) != 0 ) {
+			if (memcmp(b.key, "RG", 2) == 0) break;
 			header_pos[j] += b.size + size;
 			fseek(file, header_pos[j], SEEK_SET);
 			fread(buffer, 1, 16, file);
 			r.buff = buffer;
 			r.count = 8;
-			size = mpc_bits_get_block(&r, &b);
 		}
 
+		if (memcmp(b.key, "RG", 2) != 0 || b.size < 9) { //check for the loop above having aborted without finding the packet we want to update
+			fprintf(stderr, "Unsupported file format or corrupted file : %s\n", argv[j + 1]);
+			fclose(file);
+			continue;
+		}
 		header_pos[j] += size;
 
 		buffer[size] = 1; // replaygain version

@@ -28,7 +28,7 @@
 #include "libmpcenc.h"
 #include "stdio.h"
 
-unsigned long crc32(unsigned char *buf, int len);
+unsigned long mpc_crc32(unsigned char *buf, int len);
 
 #define MAX_ENUM 32
 
@@ -206,7 +206,7 @@ mpc_uint32_t writeBlock ( mpc_encoder_t * e, const char * key, const mpc_bool_t 
 
 	if (addCRC) {
 		char tmp[4];
-		unsigned long CRC32 = crc32((unsigned char *) e->buffer, e->pos);
+		unsigned long CRC32 = mpc_crc32((unsigned char *) e->buffer, e->pos);
 		tmp[0] = (char) (CRC32 >> 24);
 		tmp[1] = (char) (CRC32 >> 16);
 		tmp[2] = (char) (CRC32 >> 8);

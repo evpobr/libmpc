@@ -42,7 +42,7 @@
 #include "huffman.h"
 #include "mpc_bits_reader.h"
 
-unsigned long crc32(unsigned char *buf, int len);
+unsigned long mpc_crc32(unsigned char *buf, int len);
 
 static const char na[] = "n.a.";
 static char const * const versionNames[] = {
@@ -190,7 +190,7 @@ streaminfo_read_header_sv8(mpc_streaminfo* si, const mpc_bits_reader * r_in,
 	mpc_bits_reader r = *r_in;
 
 	CRC = (mpc_bits_read(&r, 16) << 16) | mpc_bits_read(&r, 16);
-	if (CRC != crc32(r.buff + 1 - (r.count >> 3), (int)block_size - 4))
+	if (CRC != mpc_crc32(r.buff + 1 - (r.count >> 3), (int)block_size - 4))
 		return MPC_STATUS_FILE;
 
 	si->stream_version = mpc_bits_read(&r, 8);

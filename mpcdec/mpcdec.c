@@ -40,7 +40,7 @@
 #include <libwaveformat.h>
 #include <getopt.h>
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #include <crtdbg.h>
 #endif
 
@@ -241,7 +241,7 @@ main(int argc, char **argv)
         fclose(wav_output.m_callback.m_user_data);
     }
 
-#ifdef WIN32
+#ifdef _MSC_VER
     assert(_CrtCheckMemory());
     _CrtDumpMemoryLeaks();
 #endif

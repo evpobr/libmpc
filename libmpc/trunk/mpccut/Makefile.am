@@ -1,4 +1,10 @@
-INCLUDES = -I$(top_srcdir)/include
+EXTRA_DIST = CMakeLists.txt
+
+AM_CPPFLAGS = -I$(top_srcdir)/include
+
+if HAVE_VISIBILITY
+  AM_CFLAGS = -fvisibility=hidden
+endif
 
 common_sources = ../common/crc32.c
 

@@ -31,7 +31,7 @@
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-/// \file math.h
+/// \file mpcdec_math.h
 /// Libmpcdec internal math routines.
 #ifndef _MPCDEC_MATH_H_
 #define _MPCDEC_MATH_H_

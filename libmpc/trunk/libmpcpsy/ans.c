@@ -28,11 +28,10 @@
  *  so that a utilization beyond Subframe/Frame Borders is even possible.
  */
 
+#include <string.h>
+
 #include "libmpcpsy.h"
 #include <mpc/mpcmath.h>
-
-#include <math.h>
-#include <string.h>
 
 
 static float  InvFourier [MAX_NS_ORDER + 1] [16];

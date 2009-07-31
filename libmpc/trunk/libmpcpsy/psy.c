@@ -53,7 +53,6 @@ CVS+
 
 #include <string.h>
 #include <stdio.h>
-#include <math.h>
 
 #include "libmpcpsy.h"
 #include <mpc/datatypes.h>

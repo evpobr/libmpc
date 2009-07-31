@@ -19,7 +19,6 @@
  */
 
 #include <string.h>
-#include <math.h>
 
 #include <mpc/mpcmath.h>
 #include <mpc/datatypes.h>

@@ -12,7 +12,12 @@ endif(MSVC)
 
 add_executable(mpc2sv8 mpc2sv8.c)
 
-target_link_libraries(mpc2sv8 mpcdec_static)
+if(SHARED)
+  target_link_libraries(mpc2sv8 mpcdec_shared)
+else(SHARED)
+  target_link_libraries(mpc2sv8 mpcdec_static)
+endif(SHARED)
+
 target_link_libraries(mpc2sv8 mpcenc_static)
 
 if(WIN32)
@@ -27,3 +32,4 @@ if(CMAKE_SYSTEM_NAME STREQUAL OpenBSD)
 target_link_libraries(mpc2sv8 ossaudio)
 endif(CMAKE_SYSTEM_NAME STREQUAL OpenBSD)
 
+install(TARGETS mpc2sv8 RUNTIME DESTINATION bin)

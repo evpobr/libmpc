@@ -6,12 +6,16 @@ project(libmpc C)
 set(CMAKE_VERBOSE_MAKEFILE false)
 TEST_BIG_ENDIAN(MPC_ENDIANNESS)
 
-option(SHARED "Use shared libmpcdec" OFF)
+if(WIN32)
+  option(SHARED "Use shared libmpcdec" OFF)
+else(WIN32)
+  option(SHARED "Use shared libmpcdec" ON)
+endif(WIN32)
 
 add_definitions(-DFAST_MATH -DCVD_FASTLOG)
 
 if(NOT MSVC)
-set(CMAKE_C_FLAGS "-O3 -fomit-frame-pointer -pipe")
+  set(CMAKE_C_FLAGS "-O3 -fomit-frame-pointer -pipe")
 endif(NOT MSVC)
 
 add_subdirectory(libmpcdec)

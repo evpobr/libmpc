@@ -17,4 +17,11 @@ target_link_libraries(mpcdec m)
 endif(NOT MSVC)
 
 target_link_libraries(mpcdec wavformat_static)
-target_link_libraries(mpcdec mpcdec_static)
+
+if(SHARED)
+  target_link_libraries(mpcdec mpcdec_shared)
+else(SHARED)
+  target_link_libraries(mpcdec mpcdec_static)
+endif(SHARED)
+
+install(TARGETS mpcdec RUNTIME DESTINATION bin)

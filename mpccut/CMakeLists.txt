@@ -12,10 +12,16 @@ endif(MSVC)
 
 add_executable(mpccut mpccut)
 
-target_link_libraries(mpccut mpcdec_static)
+if(SHARED)
+  target_link_libraries(mpccut mpcdec_shared)
+else(SHARED)
+  target_link_libraries(mpccut mpcdec_static)
+endif(SHARED)
+
 target_link_libraries(mpccut mpcenc_static)
 
 if(NOT MSVC)
 target_link_libraries(mpccut m)
 endif(NOT MSVC)
 
+install(TARGETS mpccut RUNTIME DESTINATION bin)

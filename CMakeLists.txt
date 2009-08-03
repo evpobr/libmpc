@@ -6,6 +6,8 @@ project(libmpc C)
 set(CMAKE_VERBOSE_MAKEFILE false)
 TEST_BIG_ENDIAN(MPC_ENDIANNESS)
 
+option(SHARED "Use shared libmpcdec" OFF)
+
 add_definitions(-DFAST_MATH -DCVD_FASTLOG)
 
 if(NOT MSVC)
@@ -22,3 +24,5 @@ add_subdirectory(mpcenc)
 add_subdirectory(mpc2sv8)
 add_subdirectory(mpccut)
 add_subdirectory(mpcchap)
+add_subdirectory(wavcmp)
+add_subdirectory(include)

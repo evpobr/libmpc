@@ -840,10 +840,11 @@ EvalParameters (PsyModel * m, int argc, char** argv, char** InputFile, char** Ou
 
     // if no Output-File is stated, set OutFile to InFile.mpc
     if ( *OutputFile == NULL  ) {
+	    char * ext = rindex(*InputFile, '.'); // search for extension delimiter
         strcpy ( *OutputFile = output, *InputFile );
         len = strlen ( output );
-        if ( len > 4  &&  output[len-4] == '.' )
-            len -= 4;
+		if (ext != 0 && (len - (ext - *InputFile)) < 7) // extension max size (5 chars)
+			len = ext - *InputFile;
         strcpy (output+len, ".mpc");
         argc -= 1;
     }

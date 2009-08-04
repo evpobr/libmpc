@@ -33,6 +33,6 @@
 
 #define MPCENC_MAJOR 1
 #define MPCENC_MINOR 30
-#define MPCENC_BUILD 0
+#define MPCENC_BUILD 1
 
 /* end of config.h */

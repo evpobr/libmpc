@@ -121,18 +121,26 @@ mpc_demux_fill(mpc_demux * d, mpc_uint32_t min_bytes, int flags)
  */
 static void
 mpc_demux_seek(mpc_demux * d, mpc_seek_t fpos, mpc_uint32_t min_bytes) {
-	mpc_seek_t next_pos;
+	mpc_seek_t start_pos, end_pos;
 	mpc_int_t bit_offset;
 
-	// FIXME : do not flush the buffer if fpos is in the current buffer
+	// get current buffer position
+	end_pos = ((mpc_seek_t)(d->r->tell(d->r))) << 3;
+	start_pos =	end_pos - (d->bytes_total << 3);
 
-	next_pos = fpos >> 3;
-	if (d->si.stream_version == 7)
-		next_pos = ((next_pos - d->si.header_position) & (-1 << 2)) + d->si.header_position;
-	bit_offset = (int) (fpos - (next_pos << 3));
+	if (fpos >= start_pos && fpos < end_pos) {
+		d->bits_reader.buff = d->buffer + ((fpos - start_pos) >> 3);
+		bit_offset = fpos & 7;
+	} else {
+		mpc_seek_t next_pos = fpos >> 3;
+		if (d->si.stream_version == 7)
+			next_pos = ((next_pos - d->si.header_position) & (-1 << 2)) + d->si.header_position;
+		bit_offset = (int) (fpos - (next_pos << 3));
 
-	d->r->seek(d->r, (mpc_int32_t) next_pos);
-	mpc_demux_clear_buff(d);
+		d->r->seek(d->r, (mpc_int32_t) next_pos);
+		mpc_demux_clear_buff(d);
+	}
+
 	if (d->si.stream_version == 7)
 		mpc_demux_fill(d, (min_bytes + ((bit_offset + 7) >> 3) + 3) & (~3), MPC_BUFFER_SWAP);
 	else

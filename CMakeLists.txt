@@ -16,7 +16,7 @@ endif(WIN32)
 add_definitions(-DFAST_MATH -DCVD_FASTLOG)
 
 if(NOT MSVC)
-  set(CMAKE_C_FLAGS "-O3 -fomit-frame-pointer -pipe")
+  set(CMAKE_C_FLAGS "-O3 -Wall -fomit-frame-pointer -pipe")
 endif(NOT MSVC)
 
 add_subdirectory(libmpcdec)

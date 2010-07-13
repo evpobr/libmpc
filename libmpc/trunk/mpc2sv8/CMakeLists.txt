@@ -7,7 +7,7 @@ link_directories(${libmpc_BINARY_DIR}/libmpcenc)
 
 if(MSVC)
 include_directories(${libmpc_SOURCE_DIR}/win32)
-add_executable(mpc2sv8 mpc2sv8.c ${libmpc_SOURCE_DIR}/win32/attgetopt ${libmpc_SOURCE_DIR}/win32/basename ${libmpc_SOURCE_DIR}/win32/dirent)
+add_executable(mpc2sv8 mpc2sv8.c ${libmpc_SOURCE_DIR}/win32/attgetopt.c ${libmpc_SOURCE_DIR}/win32/basename.c ${libmpc_SOURCE_DIR}/win32/dirent.c)
 endif(MSVC)
 
 add_executable(mpc2sv8 mpc2sv8.c)

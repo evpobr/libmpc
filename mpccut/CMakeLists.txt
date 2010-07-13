@@ -10,7 +10,7 @@ include_directories(${libmpc_SOURCE_DIR}/win32)
 add_executable(mpccut mpccut ${libmpc_SOURCE_DIR}/win32/attgetopt)
 endif(MSVC)
 
-add_executable(mpccut mpccut)
+add_executable(mpccut mpccut.c)
 
 if(SHARED)
   target_link_libraries(mpccut mpcdec_shared)

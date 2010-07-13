@@ -12,7 +12,7 @@ include_directories(${CUEFILE_INCLUDE_DIR})
 link_directories(${libmpc_BINARY_DIR}/libmpcdec)
 link_directories(${libmpc_BINARY_DIR}/libmpcenc)
 
-add_executable(mpcchap mpcchap dictionary iniparser ${libmpc_SOURCE_DIR}/common/tags)
+add_executable(mpcchap mpcchap.c dictionary.c iniparser.c ${libmpc_SOURCE_DIR}/common/tags.c)
 
 if(SHARED)
   target_link_libraries(mpcchap mpcdec_shared)

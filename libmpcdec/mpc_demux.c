@@ -516,7 +516,7 @@ mpc_status mpc_demux_decode(mpc_demux * d, mpc_frame_info * i)
 				d->seek_table[d->seek_table_size] = (mpc_seek_t) mpc_demux_pos(d);
 				d->seek_table_size ++;
 			}
-			mpc_demux_fill(d, 11, 0); // max header block size
+			mpc_demux_fill(d, 11, MPC_BUFFER_FULL); // max header block size
 			mpc_bits_get_block(&d->bits_reader, &b);
 			while( memcmp(b.key, "AP", 2) != 0 ) { // scan all blocks until audio
 				if (mpc_check_key(b.key) != MPC_STATUS_OK)
@@ -525,7 +525,7 @@ mpc_status mpc_demux_decode(mpc_demux * d, mpc_frame_info * i)
 					i->bits = -1;
 					return MPC_STATUS_OK;
 				}
-				if (mpc_demux_fill(d, 11 + (mpc_uint32_t) b.size, 0) == 0)
+				if (mpc_demux_fill(d, 11 + (mpc_uint32_t) b.size, MPC_BUFFER_FULL) == 0)
 					goto error;
 				d->bits_reader.buff += b.size;
 				mpc_bits_get_block(&d->bits_reader, &b);
@@ -535,7 +535,7 @@ mpc_status mpc_demux_decode(mpc_demux * d, mpc_frame_info * i)
 			i->is_key_frame = MPC_TRUE;
 		}
 		if (d->buffer + d->bytes_total - d->bits_reader.buff <= MAX_FRAME_SIZE)
-			mpc_demux_fill(d, (d->block_bits >> 3) + 1, 0);
+			mpc_demux_fill(d, (d->block_bits >> 3) + 1, MPC_BUFFER_FULL);
 		r = d->bits_reader;
 		mpc_decoder_decode_frame(d->d, &d->bits_reader, i);
 		d->block_bits -= ((d->bits_reader.buff - r.buff) << 3) + r.count - d->bits_reader.count;

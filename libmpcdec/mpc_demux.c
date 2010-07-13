@@ -353,22 +353,26 @@ static void mpc_demux_chap_find(mpc_demux * d)
 	if (d->chap_nb > 0) {
 		char * ptag;
 		d->chap = malloc(sizeof(mpc_chap_info) * d->chap_nb + tag_size);
-		ptag = (char*)(d->chap + d->chap_nb);
+		if (d->chap != 0) {
+			ptag = (char*)(d->chap + d->chap_nb);
 
-		mpc_demux_seek(d, d->chap_pos, 11);
-		size = mpc_bits_get_block(&d->bits_reader, &b);
-		while (memcmp(b.key, "CT", 2) == 0) {
-			mpc_demux_fill(d, 11 + (mpc_uint32_t) b.size, 0);
-			size = mpc_bits_get_size(&d->bits_reader, &d->chap[i].sample) + 4;
-			d->chap[i].gain = (mpc_uint16_t) mpc_bits_read(&d->bits_reader, 16);
-			d->chap[i].peak = (mpc_uint16_t) mpc_bits_read(&d->bits_reader, 16);
-			memcpy(ptag, d->bits_reader.buff + ((8 - d->bits_reader.count) >> 3), b.size - size);
-			d->bits_reader.buff += b.size - size;
-			d->chap[i].tag_size = b.size - size;
-			d->chap[i].tag = ptag;
-			ptag += b.size - size;
-			i++;
+			mpc_demux_seek(d, d->chap_pos, 11);
 			size = mpc_bits_get_block(&d->bits_reader, &b);
+			while (memcmp(b.key, "CT", 2) == 0) {
+				mpc_demux_fill(d, 11 + (mpc_uint32_t) b.size, 0);
+				size = mpc_bits_get_size(&d->bits_reader, &d->chap[i].sample) + 4;
+				d->chap[i].gain = (mpc_uint16_t) mpc_bits_read(&d->bits_reader, 16);
+				d->chap[i].peak = (mpc_uint16_t) mpc_bits_read(&d->bits_reader, 16);
+				memcpy(ptag, d->bits_reader.buff + ((8 - d->bits_reader.count) >> 3), b.size - size);
+				d->bits_reader.buff += b.size - size;
+				d->chap[i].tag_size = b.size - size;
+				d->chap[i].tag = ptag;
+				ptag += b.size - size;
+				i++;
+				size = mpc_bits_get_block(&d->bits_reader, &b);
+			}
+		} else {
+			d->chap_nb = 0; // malloc failed, chapters will not be available
 		}
 	}
 

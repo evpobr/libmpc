@@ -1,4 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
+cmake_policy(SET CMP0003 NEW)
 include(TestBigEndian)
 
 project(libmpc C)

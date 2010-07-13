@@ -36,6 +36,7 @@
 #include <string.h>
 #include <mpc/streaminfo.h>
 #include <mpc/mpcdec.h>
+#include <mpc/minimax.h>
 #include "internal.h"
 #include "decoder.h"
 #include "huffman.h"
@@ -359,12 +360,26 @@ static void mpc_demux_chap_find(mpc_demux * d)
 			mpc_demux_seek(d, d->chap_pos, 11);
 			size = mpc_bits_get_block(&d->bits_reader, &b);
 			while (memcmp(b.key, "CT", 2) == 0) {
+				int tmp_size;
+				char * tmp_ptag = ptag;
 				mpc_demux_fill(d, 11 + (mpc_uint32_t) b.size, 0);
 				size = mpc_bits_get_size(&d->bits_reader, &d->chap[i].sample) + 4;
 				d->chap[i].gain = (mpc_uint16_t) mpc_bits_read(&d->bits_reader, 16);
 				d->chap[i].peak = (mpc_uint16_t) mpc_bits_read(&d->bits_reader, 16);
-				memcpy(ptag, d->bits_reader.buff + ((8 - d->bits_reader.count) >> 3), b.size - size);
-				d->bits_reader.buff += b.size - size;
+
+				tmp_size = b.size - size;
+				do {
+					int rd_size = tmp_size;
+					mpc_uint8_t * tmp_buff = d->bits_reader.buff + ((8 - d->bits_reader.count) >> 3);
+					mpc_uint32_t avail_bytes = d->bytes_total + d->buffer - tmp_buff;
+					rd_size = mini(rd_size, avail_bytes);
+					memcpy(tmp_ptag, tmp_buff, rd_size);
+					tmp_size -= rd_size;
+					tmp_ptag += rd_size;
+					d->bits_reader.buff += rd_size;
+					mpc_demux_fill(d, tmp_size, 0);
+				} while (tmp_size > 0);
+
 				d->chap[i].tag_size = b.size - size;
 				d->chap[i].tag = ptag;
 				ptag += b.size - size;

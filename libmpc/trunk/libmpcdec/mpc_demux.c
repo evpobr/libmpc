@@ -132,6 +132,8 @@ mpc_demux_seek(mpc_demux * d, mpc_seek_t fpos, mpc_uint32_t min_bytes) {
 	if (fpos >= start_pos && fpos < end_pos) {
 		d->bits_reader.buff = d->buffer + ((fpos - start_pos) >> 3);
 		bit_offset = fpos & 7;
+		d->block_bits = 0;
+		d->block_frames = 0;
 	} else {
 		mpc_seek_t next_pos = fpos >> 3;
 		if (d->si.stream_version == 7)

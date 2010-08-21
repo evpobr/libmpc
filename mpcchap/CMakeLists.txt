@@ -15,7 +15,7 @@ link_directories(${libmpc_BINARY_DIR}/libmpcenc)
 add_executable(mpcchap mpcchap.c dictionary.c iniparser.c ${libmpc_SOURCE_DIR}/common/tags.c)
 
 if(SHARED)
-  target_link_libraries(mpcchap mpcdec_shared)
+  target_link_libraries(mpcchap mpcdec)
 else(SHARED)
   target_link_libraries(mpcchap mpcdec_static)
 endif(SHARED)

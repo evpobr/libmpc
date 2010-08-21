@@ -20,7 +20,7 @@ add_executable(mpcgain mpcgain.c)
 target_link_libraries(mpcgain ${REPLAY_GAIN_LIBRARY})
 
 if(SHARED)
-  target_link_libraries(mpcgain mpcdec_shared)
+  target_link_libraries(mpcgain mpcdec)
 else(SHARED)
   target_link_libraries(mpcgain mpcdec_static)
 endif(SHARED)

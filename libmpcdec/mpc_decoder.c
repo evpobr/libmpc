@@ -529,7 +529,7 @@ void mpc_decoder_read_bitstream_sv8(mpc_decoder * d, mpc_bits_reader * r, mpc_bo
 		}
 
 		if (d->ms) {
-			int cnt = 0, tot = 0;
+			mpc_uint_t cnt = 0, tot = 0;
 			mpc_uint32_t tmp = 0;
 			for( n = 0; n < Max_used_Band; n++)
 				if ( d->Res_L[n] != 0 || d->Res_R[n] != 0 )
@@ -611,7 +611,7 @@ void mpc_decoder_read_bitstream_sv8(mpc_decoder * d, mpc_bits_reader * r, mpc_bo
 		{6, 5, 4, 5, 6, 5, 4, 3, 4, 5, 4, 3, 2, 3, 4, 5, 4, 3, 4, 5, 6, 5, 4, 5, 6, 5, 4, 3, 4, 5, 4, 3, 2, 3, 4, 3, 2, 1, 2, 3, 4, 3, 2, 3, 4, 5, 4, 3, 4, 5, 4, 3, 2, 3, 4, 3, 2, 1, 2, 3, 2, 1, 0, 1, 2, 3, 2, 1, 2, 3, 4, 3, 2, 3, 4, 5, 4, 3, 4, 5, 4, 3, 2, 3, 4, 3, 2, 1, 2, 3, 4, 3, 2, 3, 4, 5, 4, 3, 4, 5, 6, 5, 4, 5, 6, 5, 4, 3, 4, 5, 4, 3, 2, 3, 4, 5, 4, 3, 4, 5, 6, 5, 4, 5, 6};
 
 		do {
-			mpc_int32_t k = 0, idx = 1;
+			mpc_uint32_t k = 0, idx = 1;
 			if (Res != 0) {
 				if (Res == 2) {
 					Tables[0] = & mpc_can_Q [0][0];
@@ -627,7 +627,7 @@ void mpc_decoder_read_bitstream_sv8(mpc_decoder * d, mpc_bits_reader * r, mpc_bo
 				} else if (Res == 1) {
 					Table = & mpc_can_Q1;
 					for( ; k < 36; ){
-						int kmax = k + 18;
+						mpc_uint32_t kmax = k + 18;
 						mpc_uint_t cnt = mpc_bits_can_dec(r, Table);
 						idx = 0;
 						if (cnt > 0 && cnt < 18)

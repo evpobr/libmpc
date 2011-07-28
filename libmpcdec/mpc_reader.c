@@ -50,7 +50,7 @@ static mpc_int32_t
 read_stdio(mpc_reader *p_reader, void *ptr, mpc_int32_t size)
 {
     mpc_reader_stdio *p_stdio = (mpc_reader_stdio*) p_reader->data;
-    if(p_stdio->magic != STDIO_MAGIC) return MPC_STATUS_FILE;
+    if(p_stdio->magic != STDIO_MAGIC) return MPC_STATUS_FAIL;
     return (mpc_int32_t) fread(ptr, 1, size, p_stdio->p_file);
 }
 
@@ -66,7 +66,7 @@ static mpc_int32_t
 tell_stdio(mpc_reader *p_reader)
 {
     mpc_reader_stdio *p_stdio = (mpc_reader_stdio*) p_reader->data;
-    if(p_stdio->magic != STDIO_MAGIC) return MPC_STATUS_FILE;
+    if(p_stdio->magic != STDIO_MAGIC) return MPC_STATUS_FAIL;
     return ftell(p_stdio->p_file);
 }
 
@@ -74,7 +74,7 @@ static mpc_int32_t
 get_size_stdio(mpc_reader *p_reader)
 {
     mpc_reader_stdio *p_stdio = (mpc_reader_stdio*) p_reader->data;
-    if(p_stdio->magic != STDIO_MAGIC) return MPC_STATUS_FILE;
+    if(p_stdio->magic != STDIO_MAGIC) return MPC_STATUS_FAIL;
     return p_stdio->file_size;
 }
 
@@ -94,7 +94,7 @@ mpc_reader_init_stdio_stream(mpc_reader * p_reader, FILE * p_file)
     p_stdio = NULL;
     memset(&tmp_reader, 0, sizeof tmp_reader);
     p_stdio = malloc(sizeof *p_stdio);
-    if(!p_stdio) return MPC_STATUS_FILE;
+    if(!p_stdio) return MPC_STATUS_FAIL;
     memset(p_stdio, 0, sizeof *p_stdio);
 
     p_stdio->magic  = STDIO_MAGIC;
@@ -121,14 +121,14 @@ clean:
     if(p_stdio && p_stdio->p_file)
         fclose(p_stdio->p_file);
     free(p_stdio);
-    return MPC_STATUS_FILE;
+    return MPC_STATUS_FAIL;
 }
 
 mpc_status
 mpc_reader_init_stdio(mpc_reader *p_reader, const char *filename)
 {
 	FILE * stream = fopen(filename, "rb");
-	if (stream == NULL) return MPC_STATUS_FILE;
+	if (stream == NULL) return MPC_STATUS_FAIL;
 	return mpc_reader_init_stdio_stream(p_reader,stream);
 }
 

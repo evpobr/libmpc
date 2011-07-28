@@ -53,7 +53,6 @@ stderr_printf ( const char* format, ... )
 {
     char     buff [2 * 1024 + 3072];
     char*    p = buff;
-    char*    q;
     int      ret;
     va_list  v;
 
@@ -76,7 +75,7 @@ stderr_printf ( const char* format, ... )
         // for Windows systems we must merge carriage returns into the stream to avoid staircases
         // Also escape sequences must be detected and replaced (incomplete now)
 
-        char                            buff [128];
+        char                            buff [128], *q;
         static int                      init = 0;
         CONSOLE_SCREEN_BUFFER_INFO      con_info;
         static HANDLE                   hSTDERR;
@@ -167,7 +166,7 @@ stderr_printf ( const char* format, ... )
         }
 
 #else
-
+		char * q;
         // for non-Unix systems we must merge carriage returns into the stream to avoid staircases
         while ( ( q = strchr (p, '\n')) != NULL ) {
             WRITE ( stderr, p, q-p );

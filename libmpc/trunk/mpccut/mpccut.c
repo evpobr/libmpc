@@ -142,7 +142,7 @@ int main(int argc, char **argv)
 	e.outputFile = fopen( argv[optind + 1], "rb" );
 	if ( e.outputFile != 0 ) {
 		fprintf(stderr, "Error : output file \"%s\" already exists\n", argv[optind + 1]);
-		exit(MPC_STATUS_FILE);
+		exit(MPC_STATUS_FAIL);
 	}
 	e.outputFile = fopen( argv[optind + 1], "w+b" );
 

@@ -136,7 +136,7 @@ int convert(char * sv7file, char * sv8file)
 		size_t tmp_size = fread(buf, 1, mini(TMP_BUF_SIZE, r_size), in_file);
 		if (fwrite(buf, 1, tmp_size, e.outputFile) != tmp_size) {
 			fprintf(stderr, "Error writing to target file : \"%s\"\n", sv8file);
-			err = MPC_STATUS_FILE;
+			err = MPC_STATUS_FAIL;
 			goto IN_FILE_ERR;
 		}
 		r_size -= tmp_size;

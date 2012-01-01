@@ -163,8 +163,8 @@ int main(int argc, char **argv)
 
 	for (j = 1; j < argc; j++) {
 		MPC_SAMPLE_FORMAT sample_buffer[MPC_DECODER_BUFFER_LENGTH];
-		MPC_SAMPLE_FORMAT title_max = 0, chap_max;
-		mpc_uint16_t * chap_gain, * chap_peak;
+		MPC_SAMPLE_FORMAT title_max = 0, chap_max = 0;
+		mpc_uint16_t * chap_gain = 0, * chap_peak = 0;
 		mpc_reader reader;
 		mpc_demux* demux;
 		mpc_streaminfo si;

@@ -633,7 +633,7 @@ mpc_status mpc_demux_decode(mpc_demux * d, mpc_frame_info * i) {
 		if (MPC_IS_FAILURE(s))
 			i->bits = -1; // we pretend it's end of file
 
-		if (MPC_IS_FAILURE(s) || i->samples > 0)
+		if (i->bits == -1 || i->samples > 0)
 			return s;
 	}
 }

@@ -40,7 +40,6 @@
 #include <libwaveformat.h>
 #include <getopt.h>
 #include <math.h>
-#include <byteswap.h>
 
 #ifdef _MSC_VER
 #include <crtdbg.h>
@@ -75,6 +74,11 @@ t_wav_uint32 mpc_wav_output_seek(void* p_user_data, t_wav_uint32 p_position)
 {
     FILE* p_handle = (FILE*) p_user_data;
     return (t_wav_uint32) !fseek(p_handle, p_position, SEEK_SET);
+}
+
+static short bswap_16(short in)
+{
+	return (in << 8) | ((in >> 8) & 0xFF);
 }
 
 #ifdef MPC_FIXED_POINT

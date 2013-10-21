@@ -16,4 +16,5 @@ libmpcdec_la_SOURCES = huffman.c mpc_decoder.c mpc_reader.c \
 	mpc_bits_reader.h huffman.h decoder.h internal.h requant.h mpcdec_math.h \
 	$(common_sources)
 
+# version info shoud match the one in CMakeLists.txt
 libmpcdec_la_LDFLAGS = -no-undefined -version-info 7:0:1

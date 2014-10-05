@@ -7,11 +7,16 @@ project(libmpc C)
 set(CMAKE_VERBOSE_MAKEFILE false)
 TEST_BIG_ENDIAN(MPC_ENDIANNESS)
 
-if(WIN32)
-  option(SHARED "Use shared libmpcdec" OFF)
-else(WIN32)
-  option(SHARED "Use shared libmpcdec" ON)
-endif(WIN32)
+# Use the standard CMake flag to drive the shared object build.
+if(DEFINED BUILD_SHARED_LIBS AND NOT DEFINED SHARED)
+  set(SHARED ${BUILD_SHARED_LIBS})
+else()
+  if(WIN32)
+    option(SHARED "Use shared libmpcdec" OFF)
+  else(WIN32)
+    option(SHARED "Use shared libmpcdec" ON)
+  endif(WIN32)
+endif()
 
 add_definitions(-DFAST_MATH -DCVD_FASTLOG)
 

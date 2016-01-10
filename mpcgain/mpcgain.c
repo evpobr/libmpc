@@ -115,7 +115,7 @@ static void write_chaps_gain(mpc_demux * demux, const char * file_name,
 
 	while (1) {
 		fseek(file, next_chap_pos, SEEK_SET);
-		fread(buffer, 1, MAX_HEAD_SIZE, file);
+        if (0 == fread(buffer, 1, MAX_HEAD_SIZE, file)) break;
 		r.buff = buffer;
 		r.count = 8;
 		size = mpc_bits_get_block(&r, &b);
@@ -182,7 +182,7 @@ int main(int argc, char **argv)
 		chap_nb = mpc_demux_chap_nb(demux);
 		mpc_demux_seek_sample(demux, 0);
 		if (chap_nb > 0) {
-			mpc_chap_info * chap_info = mpc_demux_chap(demux, chap);
+            const mpc_chap_info * chap_info = mpc_demux_chap(demux, chap);
 			next_chap_sample = chap_info->sample;
 			chap_gain = malloc(sizeof(mpc_uint16_t) * 2 * chap_nb);
 			chap_peak = chap_gain + chap_nb;
@@ -215,7 +215,7 @@ int main(int argc, char **argv)
 				i += sample_nb;
 				cur_sample = next_chap_sample;
 				if (chap < chap_nb) {
-					mpc_chap_info * chap_info = mpc_demux_chap(demux, chap);
+                    const mpc_chap_info * chap_info = mpc_demux_chap(demux, chap);
 					next_chap_sample = chap_info->sample;
 				} else
 					next_chap_sample = mpc_int64_max;
@@ -260,8 +260,8 @@ int main(int argc, char **argv)
 			continue;
 		}
 		fseek(file, header_pos[j] - 4, SEEK_SET);
-		fread(buffer, 1, 16, file);
-		if (memcmp(buffer, "MPCK", 4) != 0) {
+
+        if (fread(buffer, 1, 16, file) != 16 || memcmp(buffer, "MPCK", 4) != 0) {
 			fprintf(stderr, "Unsupported file format, not a sv8 file : %s\n", argv[j + 1]);
 			fclose(file);
 			continue;
@@ -276,7 +276,7 @@ int main(int argc, char **argv)
 			if (memcmp(b.key, "RG", 2) == 0) break;
 			header_pos[j] += b.size + size;
 			fseek(file, header_pos[j], SEEK_SET);
-			fread(buffer, 1, 16, file);
+            if (0 == fread(buffer, 1, 16, file)) break;
 			r.buff = buffer;
 			r.count = 8;
 		}
@@ -286,7 +286,7 @@ int main(int argc, char **argv)
 			fclose(file);
 			continue;
 		}
-		header_pos[j] += size;
+        header_pos[j] += size;
 
 		buffer[size] = 1; // replaygain version
 		buffer[size + 1] = title_gain[j] >> 8;

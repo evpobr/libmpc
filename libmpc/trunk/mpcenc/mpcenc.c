@@ -1023,7 +1023,7 @@ EvalParameters (PsyModel * m, int argc, char** argv, char** InputFile, char** Ou
         }
         else if ( 0 == strcmp ( arg, "stderr") ) {                                      // Offset for threshold in quiet
             if ( ++k >= argc ) { stderr_printf ( errmsg, arg ); return -1; }
-            freopen ( argv[k], "a", stderr );
+            stderr = freopen ( argv[k], "a", stderr );
         }
         else if ( 0 == strcmp ( arg, "ltq")  ||  0 == strcmp ( arg, "ath") ) {          // threshold in quiet
             if ( ++k >= argc ) { stderr_printf ( errmsg, arg ); return -1; }
@@ -1208,11 +1208,12 @@ EvalParameters (PsyModel * m, int argc, char** argv, char** InputFile, char** Ou
             p = strchr ( argv[k], '=' );
             if ( p == NULL ) {
                 stderr_printf (" Enter value for tag key '%s': ", argv[k] );
-                fgets ( buff, sizeof buff, stdin );
-                len = strlen (buff);
-                while ( len > 0  &&  (buff [len-1] == '\r'  ||  buff [len-1] == '\n') )
-                    len--;
-                addtag ( arg, strlen(arg), buff, len, NoUnicode*6, 0 );
+                if (0 != fgets ( buff, sizeof buff, stdin )) {
+                    len = strlen (buff);
+                    while ( len > 0  &&  (buff [len-1] == '\r'  ||  buff [len-1] == '\n') )
+                        len--;
+                    addtag ( arg, strlen(arg), buff, len, NoUnicode*6, 0 );
+                }
             }
             else {
                 fp = fopen ( p+1, "rb" );

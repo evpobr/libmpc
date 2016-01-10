@@ -18,3 +18,4 @@ libmpcdec_la_SOURCES = huffman.c mpc_decoder.c mpc_reader.c \
 
 # version info shoud match the one in CMakeLists.txt
 libmpcdec_la_LDFLAGS = -no-undefined -version-info 7:0:1
+libmpcdec_la_LIBADD = -lm

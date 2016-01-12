@@ -1023,7 +1023,7 @@ EvalParameters (PsyModel * m, int argc, char** argv, char** InputFile, char** Ou
         }
         else if ( 0 == strcmp ( arg, "stderr") ) {                                      // Offset for threshold in quiet
             if ( ++k >= argc ) { stderr_printf ( errmsg, arg ); return -1; }
-            stderr = freopen ( argv[k], "a", stderr );
+            if ( 0 == freopen ( argv[k], "a", stderr ) ) { stderr_printf ("invalid stderr filename"); return -1; }
         }
         else if ( 0 == strcmp ( arg, "ltq")  ||  0 == strcmp ( arg, "ath") ) {          // threshold in quiet
             if ( ++k >= argc ) { stderr_printf ( errmsg, arg ); return -1; }
@@ -1458,6 +1458,8 @@ static void Init_FPU ( void )
     _asm { fstcw cw };
     cw  &=  ~0x300;
 	_asm { fldcw cw };
+#else
+    (void)cw; // remove unused variable warning
 #endif
 }
 

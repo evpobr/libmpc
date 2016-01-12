@@ -566,7 +566,7 @@ void mpc_demux_get_info(mpc_demux * d, mpc_streaminfo * i)
 	memcpy(i, &d->si, sizeof d->si);
 }
 
-static mpc_status mpc_demux_decode_inner(mpc_demux * d, mpc_frame_info * i)
+mpc_status mpc_demux_decode_inner(mpc_demux * d, mpc_frame_info * i)
 {
 	mpc_bits_reader r;
 	if (d->si.stream_version >= 8) {

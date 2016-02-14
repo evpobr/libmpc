@@ -58,24 +58,11 @@
 # include <float.h>
 #endif
 
-
-#if !defined(__APPLE__)
-// use optimized assembler routines for Pentium III/K6-2/Athlon (only 32 bit OS, Intel x86 and no MAKE_xxBITS)
-// you need the NASM assembler on your system, the program becomes a little bit larger and decoding
-// on AMD K6-2 (x3), AMD K6-III (x3), AMD Duron (x1.7), AMD Athlon (x1.7), Pentium III (x2) and Pentium 4 (x1.8) becomes faster
-#define USE_ASM
-
-#endif
-
 // Use termios for reading values from keyboard without echo and ENTER
 #define USE_TERMIOS
 
 // make debug output in tags.c stfu
 #define STFU
-
-#if INT_MAX < 2147483647L
-# undef USE_ASM
-#endif
 
 #ifndef O_BINARY
 # ifdef _O_BINARY

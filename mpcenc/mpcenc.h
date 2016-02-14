@@ -33,6 +33,7 @@
 //// portable system includes //////////////////////////////////////
 #include <stddef.h>
 #include <math.h>
+#include <sys/select.h>
 
 //// system dependent system includes //////////////////////////////
 // low level I/O, where are prototypes and constants?

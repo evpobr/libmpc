@@ -49,7 +49,7 @@
 # include <unistd.h>
 #endif
 
-#if   defined __linux__
+#if   defined __GLIBC__
 #  include <fpu_control.h>
 #elif defined __FreeBSD__
 # include <machine/floatingpoint.h>

@@ -33,7 +33,6 @@
 //// portable system includes //////////////////////////////////////
 #include <stddef.h>
 #include <math.h>
-#include <sys/select.h>
 
 //// system dependent system includes //////////////////////////////
 // low level I/O, where are prototypes and constants?
@@ -42,6 +41,7 @@
 # include <fcntl.h>
 # include <windows.h>
 #elif defined __unix__  ||  defined __linux__  ||  defined __APPLE__
+# include <sys/select.h>
 # include <unistd.h>
 # include <locale.h>
 # include <langinfo.h>
